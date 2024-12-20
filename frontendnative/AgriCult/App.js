@@ -8,6 +8,7 @@ import BuyerHomeScreen from './components/BuyerHomeScreen/BuyerHomeScreen';
 import SellerHomeScreen from './components/SellerHomeScreen/SellerHomeScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import OrderScreen from './components/BuyerHomeScreen/OrderScreen';
 
 const Stack = createStackNavigator();
 
@@ -94,6 +95,10 @@ export default function App() {
           name="SellerHomeScreen"
           component={SellerHomeScreen}
           options={{ title: 'Seller Home' }} // Customize title if needed
+        />
+        <Stack.Screen
+        name='PlaceOrder'
+        component={OrderScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

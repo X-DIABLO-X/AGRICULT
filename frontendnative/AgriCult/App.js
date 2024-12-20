@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import SplashScreen from './components/splashScreen/SplashScreen';
-import BuyerRegistration from './components/BuyerRegistration';
-import SellerRegistration from './components/SellerRegistration'; // Assume this is created
-import OTPVerification from './components/OTPVerification';
+import BuyerRegistration from './components/ResgistrationPage/BuyerRegistration';
+import SellerRegistration from './components/ResgistrationPage/SellerRegistration'; 
+import OTPVerification from './components/ResgistrationPage/OTPVerification';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 

@@ -8,14 +8,15 @@ import {
   Image,
   StyleSheet,
   Alert,
+  Picker, // For region selection
 } from 'react-native';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 
-const BuyerRegistration = ({ navigation }) => {
-  const [fullName, setFullName] = useState('');
+const SellerRegistration = ({ navigation }) => {
+  const [licenseNumber, setLicenseNumber] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [businessName, setBusinessName] = useState('');
-  const [location, setLocation] = useState('');
+  const [email, setEmail] = useState('');
+  const [region, setRegion] = useState('');
   const [password, setPassword] = useState('');
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -39,10 +40,9 @@ const BuyerRegistration = ({ navigation }) => {
 
   const handleRegister = () => {
     if (
-      !fullName ||
+      !licenseNumber ||
       !phoneNumber ||
-      !businessName ||
-      !location ||
+      !region ||
       !password ||
       !termsAccepted
     ) {
@@ -56,13 +56,13 @@ const BuyerRegistration = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.form}>
-        <Text style={styles.title}>Register</Text>
+        <Text style={styles.title}>Seller Registration</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Full Name (required)"
-          value={fullName}
-          onChangeText={setFullName}
+          placeholder="License Number (required)"
+          value={licenseNumber}
+          onChangeText={setLicenseNumber}
         />
 
         <TextInput
@@ -75,21 +75,29 @@ const BuyerRegistration = ({ navigation }) => {
 
         <TextInput
           style={styles.input}
-          placeholder="Business Name (required)"
-          value={businessName}
-          onChangeText={setBusinessName}
+          placeholder="Email (optional)"
+          value={email}
+          onChangeText={setEmail}
         />
+
+        <View style={styles.pickerContainer}>
+          <Text style={styles.pickerLabel}>Region (required)</Text>
+          <Picker
+            selectedValue={region}
+            style={styles.picker}
+            onValueChange={(itemValue) => setRegion(itemValue)}
+          >
+            <Picker.Item label="Select Region" value="" />
+            <Picker.Item label="Region 1" value="region1" />
+            <Picker.Item label="Region 2" value="region2" />
+            <Picker.Item label="Region 3" value="region3" />
+            {/* Add more regions as needed */}
+          </Picker>
+        </View>
 
         <TextInput
           style={styles.input}
-          placeholder="Location (required)"
-          value={location}
-          onChangeText={setLocation}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Password (required)"
+          placeholder="Password Creation (required)"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
@@ -161,6 +169,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: '#f1f8e9',
   },
+  pickerContainer: {
+    marginBottom: 15,
+  },
+  pickerLabel: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  picker: {
+    height: 40,
+    borderColor: '#c8e6c9',
+    borderWidth: 1,
+    borderRadius: 5,
+    backgroundColor: '#f1f8e9',
+  },
   photoContainer: {
     marginBottom: 15,
     alignItems: 'center',
@@ -191,4 +213,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BuyerRegistration;
+export default SellerRegistration;

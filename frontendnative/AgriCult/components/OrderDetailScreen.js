@@ -4,7 +4,6 @@ import { ScrollView } from 'react-native-gesture-handler';
 
 const OrderDetailScreen = ({route}) => {
     const {order} =route.params;
-    
   return (
     <ScrollView>
         <View style={styles.card}>

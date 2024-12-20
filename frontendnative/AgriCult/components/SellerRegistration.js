@@ -1,15 +1,6 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Button,
-  Image,
-  StyleSheet,
-  Alert,
-  Picker, // For region selection
-} from 'react-native';
+import { View, Text, TextInput, Alert, Button, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { Picker } from '@react-native-picker/picker'; // Correct import
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 
 const SellerRegistration = ({ navigation }) => {

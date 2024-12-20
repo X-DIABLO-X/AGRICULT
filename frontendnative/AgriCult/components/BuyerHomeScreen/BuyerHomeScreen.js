@@ -1,21 +1,65 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import PlaceOrder from './PlaceOrder';
+import { FlatList } from 'react-native-gesture-handler';
 
 const Stack = createStackNavigator();
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const [orders] = useState([
+    {
+      id: '1',
+      quantity: '12 tons',
+      quality: 'Single Filter',
+      region: 'Mandya',
+      status: 'Pending',
+      date: '2024-03-20',
+    },
+    {
+      id: '2',
+      quantity: '15 tons',
+      quality: 'Double Filter',
+      region: 'Chamarajanagar',
+      status: 'Confirmed',
+      date: '2024-03-19',
+    },
+  ]);
+
+  const renderOrderCard = ({ item }) => (
+    <TouchableOpacity style={styles.orderCard}>
+      <View style={styles.orderHeader}>
+        <Text style={styles.orderId}>Order #{item.id}</Text>
+        <Text style={[
+          styles.status,
+          { color: item.status === 'Confirmed' ? '#4CAF50' : '#FFA000' }
+        ]}>{item.status}</Text>
+      </View>
+      <View style={styles.orderDetails}>
+        <Text>Quantity: {item.quantity}</Text>
+        <Text>Quality: {item.quality}</Text>
+        <Text>Region: {item.region}</Text>
+        <Text>Date: {item.date}</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
       {/* Other content goes here */}
       <View style={styles.content}>
         {/* Main content */}
+        <Text style={styles.headerTitle}>Your Orders:</Text>
+        <FlatList
+        data={orders}
+        renderItem={renderOrderCard}
+        keyExtractor={item => item.id}
+        showsVerticalScrollIndicator={false}
+        />
       </View>
 
       {/* Bottom Navigation Bar */}
@@ -57,6 +101,28 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
+  },
+  orderCard: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 2,
+  },
+  orderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  orderId: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  status: {
+    fontWeight: 'bold',
+  },
+  orderDetails: {
+    gap: 4,
   },
   headerRight: {
     flexDirection: 'row',

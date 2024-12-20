@@ -24,9 +24,15 @@ const OTPVerification = ({ route, navigation }) => {
 
         // Navigate to the appropriate home screen based on user type
         if (userType === 'buyer') {
-          navigation.replace('BuyerHomeScreen'); // Replace with BuyerHomeScreen
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'BuyerHomeScreen' }],
+          }); // Replace with BuyerHomeScreen
         } else if (userType === 'seller') {
-          navigation.replace('SellerHomeScreen'); // Replace with SellerHomeScreen
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'SellerHomeScreen' }],
+          }); // Replace with SellerHomeScreen
         }
       } else {
         setIsLoading(false); // Stop loading

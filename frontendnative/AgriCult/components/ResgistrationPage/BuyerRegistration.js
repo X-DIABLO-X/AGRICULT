@@ -4,195 +4,302 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Button,
   Image,
   StyleSheet,
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
+import * as ImagePicker from 'expo-image-picker';
+import { useFonts, Poppins_400Regular, Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 const BuyerRegistration = ({ navigation }) => {
-  const [fullName, setFullName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [businessName, setBusinessName] = useState('');
-  const [location, setLocation] = useState('');
-  const [password, setPassword] = useState('');
-  const [profilePhoto, setProfilePhoto] = useState(null);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phoneNumber: '',
+    businessName: '',
+    location: '',
+    password: '',
+    profilePhoto: null,
+    termsAccepted: false,
+  });
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+  });
+
+  const handleInputChange = (key, value) => {
+    setFormData(prevState => ({ ...prevState, [key]: value }));
+  };
 
   const handleOTPVerification = () => {
-    if (!phoneNumber) {
+    if (!formData.phoneNumber) {
       Alert.alert('Error', 'Please enter your phone number.');
       return;
     }
-    // Simulate OTP sending logic
-    Alert.alert('OTP Sent', `OTP has been sent to ${phoneNumber}`);
-    // Navigate to OTPVerification screen with the phone number and userType (hardcoded to "buyer")
-    navigation.navigate('OTPVerification', { phoneNumber, userType: 'buyer' });
+    Alert.alert('OTP Sent', `OTP has been sent to ${formData.phoneNumber}`);
+    navigation.navigate('OTPVerification', { phoneNumber: formData.phoneNumber, userType: 'buyer' });
   };
 
-  const handlePhotoUpload = () => {
-    // Simulate photo upload logic
-    Alert.alert('Upload Photo', 'Photo uploaded successfully.');
-    setProfilePhoto('https://via.placeholder.com/100'); // Temporary placeholder image
+  const handlePhotoUpload = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (permissionResult.granted === false) {
+      Alert.alert('Permission Required', 'You need to grant camera roll permissions to upload a photo.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      handleInputChange('profilePhoto', result.assets[0].uri);
+    }
   };
 
   const handleRegister = () => {
-    if (
-      !fullName ||
-      !phoneNumber ||
-      !businessName ||
-      !location ||
-      !password ||
-      !termsAccepted
-    ) {
+    const { fullName, phoneNumber, businessName, location, password, termsAccepted } = formData;
+    if (!fullName || !phoneNumber || !businessName || !location || !password || !termsAccepted) {
       Alert.alert('Error', 'Please fill all required fields and accept terms.');
       return;
     }
-    // Proceed to OTP Verification after registration details are validated
     handleOTPVerification();
   };
 
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+    <LinearGradient
+      colors={['#e0f2f1', '#ffffff']}
+      style={styles.gradientBackground}
     >
-      <View style={styles.form}>
-        <Text style={styles.title}>Buyer Registration</Text>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.form}>
+              <Text style={styles.title}>Buyer Registration</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Full Name (required)"
-          value={fullName}
-          onChangeText={setFullName}
-        />
+              <InputField
+                icon="user"
+                placeholder="Full Name"
+                value={formData.fullName}
+                onChangeText={(text) => handleInputChange('fullName', text)}
+              />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Phone Number (required)"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          keyboardType="phone-pad"
-        />
+              <InputField
+                icon="phone"
+                placeholder="Phone Number"
+                value={formData.phoneNumber}
+                onChangeText={(text) => handleInputChange('phoneNumber', text)}
+                keyboardType="phone-pad"
+              />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Business Name (required)"
-          value={businessName}
-          onChangeText={setBusinessName}
-        />
+              <InputField
+                icon="briefcase"
+                placeholder="Business Name"
+                value={formData.businessName}
+                onChangeText={(text) => handleInputChange('businessName', text)}
+              />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Location (required)"
-          value={location}
-          onChangeText={setLocation}
-        />
+              <InputField
+                icon="map-pin"
+                placeholder="Location"
+                value={formData.location}
+                onChangeText={(text) => handleInputChange('location', text)}
+              />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password (required)"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+              <InputField
+                icon="lock"
+                placeholder="Password"
+                value={formData.password}
+                onChangeText={(text) => handleInputChange('password', text)}
+                secureTextEntry={!showPassword}
+                rightIcon={
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    <Feather name={showPassword ? "eye-off" : "eye"} size={20} color="#388E3C" />
+                  </TouchableOpacity>
+                }
+              />
 
-        <View style={styles.photoContainer}>
-          <Text style={styles.photoLabel}>Profile Photo (optional)</Text>
-          <Button title="Upload Photo" onPress={handlePhotoUpload} />
-          {profilePhoto && (
-            <Image source={{ uri: profilePhoto }} style={styles.photoPreview} />
-          )}
-        </View>
+              <View style={styles.photoContainer}>
+                <Text style={styles.photoLabel}>Profile Photo (Optional)</Text>
+                <TouchableOpacity style={styles.photoButton} onPress={handlePhotoUpload}>
+                  {formData.profilePhoto ? (
+                    <Image source={{ uri: formData.profilePhoto }} style={styles.photoPreview} />
+                  ) : (
+                    <View style={styles.photoPlaceholder}>
+                      <Feather name="camera" size={40} color="#388E3C" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
 
-        <View style={styles.checkboxContainer}>
-          <BouncyCheckbox
-            size={25}
-            fillColor="#4caf50"
-            unfillColor="#FFFFFF"
-            text="I accept terms and policy"
-            iconStyle={{ borderColor: '#4caf50' }}
-            textStyle={{
-              textDecorationLine: 'none',
-              color: '#333',
-            }}
-            isChecked={termsAccepted}
-            onPress={(isChecked) => setTermsAccepted(isChecked)}
-          />
-        </View>
+              <View style={styles.checkboxContainer}>
+                <BouncyCheckbox
+                  size={25}
+                  fillColor="#388E3C"
+                  unfillColor="#FFFFFF"
+                  text="I accept terms and policy"
+                  iconStyle={{ borderColor: '#388E3C' }}
+                  textStyle={styles.checkboxText}
+                  isChecked={formData.termsAccepted}
+                  onPress={(isChecked) => handleInputChange('termsAccepted', isChecked)}
+                />
+              </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Register</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+              <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                <Text style={styles.buttonText}>Register</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
+const InputField = ({ icon, placeholder, value, onChangeText, secureTextEntry, keyboardType, rightIcon }) => (
+  <View style={styles.inputContainer}>
+    <Feather name={icon} size={20} color="#388E3C" style={styles.inputIcon} />
+    <TextInput
+      style={styles.input}
+      placeholder={placeholder}
+      value={value}
+      onChangeText={onChangeText}
+      secureTextEntry={secureTextEntry}
+      keyboardType={keyboardType}
+      placeholderTextColor="#666"
+    />
+    {rightIcon}
+  </View>
+);
+
 const styles = StyleSheet.create({
+  gradientBackground: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e8f5e9',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
   },
   form: {
-    width: '90%',
     backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: 20,
+    padding: 30,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
     elevation: 5,
+    width: width > 500 ? 500 : '100%',
+    alignSelf: 'center',
   },
   title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#4caf50',
-    marginBottom: 20,
+    fontSize: 28,
+    fontFamily: 'Poppins_700Bold',
+    color: '#388E3C',
+    marginBottom: 30,
     textAlign: 'center',
   },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
   input: {
-    height: 40,
-    borderColor: '#c8e6c9',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 15,
-    paddingHorizontal: 10,
-    backgroundColor: '#f1f8e9',
+    flex: 1,
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 16,
+    color: '#333',
   },
   photoContainer: {
-    marginBottom: 15,
+    marginBottom: 20,
     alignItems: 'center',
   },
   photoLabel: {
-    fontSize: 14,
-    marginBottom: 5,
+    fontSize: 16,
+    fontFamily: 'Poppins_600SemiBold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  photoButton: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f0f4f7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    elevation: 2,
   },
   photoPreview: {
-    width: 100,
-    height: 100,
-    marginTop: 10,
-    borderRadius: 50,
+    width: '100%',
+    height: '100%',
+  },
+  photoPlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   checkboxContainer: {
-    marginBottom: 15,
+    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
+  checkboxText: {
+    textDecorationLine: 'none',
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 14,
+    color: '#333',
   },
   button: {
-    backgroundColor: '#4caf50',
-    borderRadius: 5,
-    paddingVertical: 10,
+    backgroundColor: '#388E3C',
+    borderRadius: 10,
+    paddingVertical: 15,
     alignItems: 'center',
+    marginTop: 10,
+    elevation: 2,
   },
   buttonText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontFamily: 'Poppins_600SemiBold',
   },
 });
 

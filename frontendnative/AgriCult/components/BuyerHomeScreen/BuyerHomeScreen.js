@@ -41,12 +41,7 @@ const HomeScreen = () => {
 
 const BuyerHomeScreen = () => {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="BuyerHome">
-        <Stack.Screen name="BuyerHome" component={HomeScreen} />
-        <Stack.Screen name="PlaceOrder" component={PlaceOrder} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <HomeScreen />
   );
 };
 

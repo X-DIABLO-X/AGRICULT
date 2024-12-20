@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import SplashScreen from './components/splashScreen/SplashScreen';
-import BuyerRegistration from './components/ResgistrationPage/BuyerRegistration';
-import SellerRegistration from './components/ResgistrationPage/SellerRegistration';
-import OTPVerification from './components/ResgistrationPage/OTPVerification';
-import BuyerHomeScreen from './components/BuyerHomeScreen/BuyerHomeScreen';
-import SellerHomeScreen from './components/SellerHomeScreen/SellerHomeScreen';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import OrderScreen from './components/BuyerHomeScreen/OrderScreen';
+import React, { useState, useEffect } from "react";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import SplashScreen from "./components/splashScreen/SplashScreen";
+import BuyerRegistration from "./components/ResgistrationPage/BuyerRegistration";
+import SellerRegistration from "./components/ResgistrationPage/SellerRegistration";
+import OTPVerification from "./components/ResgistrationPage/OTPVerification";
+import BuyerHomeScreen from "./components/BuyerHomeScreen/BuyerHomeScreen";
+import SellerHomeScreen from "./components/SellerHomeScreen/SellerHomeScreen";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import OrderScreen from "./components/BuyerHomeScreen/OrderScreen";
+import OrderDetailScreen from "./components/OrderDetailScreen";
 
 const Stack = createStackNavigator();
 
@@ -19,14 +20,14 @@ const UserTypeSelection = ({ navigation }) => {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('BuyerRegistration')}
+        onPress={() => navigation.navigate("BuyerRegistration")}
       >
         <Text style={styles.buttonText}>Register as Buyer</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('SellerRegistration')}
+        onPress={() => navigation.navigate("SellerRegistration")}
       >
         <Text style={styles.buttonText}>Register as Seller</Text>
       </TouchableOpacity>
@@ -80,25 +81,27 @@ export default function App() {
         <Stack.Screen
           name="OTPVerification"
           component={OTPVerification}
-          options={{ title: 'Verify OTP' }} // Show a title in the header
+          options={{ title: "Verify OTP" }} // Show a title in the header
         />
 
         {/* Buyer Home Screen */}
         <Stack.Screen
           name="BuyerHomeScreen"
           component={BuyerHomeScreen}
-          options={{ title: 'Buyer Home' }} // Customize title if needed
+          options={{ title: "Buyer Home" }} // Customize title if needed
         />
 
         {/* Seller Home Screen */}
         <Stack.Screen
           name="SellerHomeScreen"
           component={SellerHomeScreen}
-          options={{ title: 'Seller Home' }} // Customize title if needed
+          options={{ title: "Seller Home" }} // Customize title if needed
         />
+        <Stack.Screen name="PlaceOrder" component={OrderScreen} />
         <Stack.Screen
-        name='PlaceOrder'
-        component={OrderScreen}
+          name="OrderDetail"
+          component={OrderDetailScreen}
+          options={{ title: "Order Details" }}
         />
       </Stack.Navigator>
     </NavigationContainer>
@@ -108,26 +111,26 @@ export default function App() {
 const styles = StyleSheet.create({
   selectionContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e8f5e9',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#e8f5e9",
     padding: 20,
   },
   selectionText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 40,
   },
   button: {
-    backgroundColor: '#4caf50',
+    backgroundColor: "#4caf50",
     paddingVertical: 10,
     paddingHorizontal: 20,
     marginBottom: 15,
     borderRadius: 5,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

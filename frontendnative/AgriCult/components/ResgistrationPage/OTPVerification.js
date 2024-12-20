@@ -1,18 +1,38 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 
 const OTPVerification = ({ route, navigation }) => {
-  const { phoneNumber } = route.params; // Get phone number passed from the previous screen
+  const { phoneNumber, userType } = route.params; // Get phone number and userType passed from the previous screen
   const [otp, setOtp] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Track loading state
 
   const handleVerifyOTP = () => {
     if (!otp) {
       Alert.alert('Error', 'Please enter the OTP.');
       return;
     }
-    // Simulate OTP verification logic
-    Alert.alert('Success', 'OTP Verified Successfully!');
-    navigation.goBack(); // Navigate back after verification
+
+    setIsLoading(true); // Start loading
+
+    // Simulate OTP verification (replace with actual API call)
+    setTimeout(() => {
+      // Example OTP verification logic
+      if (otp === '123456') { // Replace '123456' with your OTP validation logic
+        setIsLoading(false); // Stop loading
+        Alert.alert('Success', 'OTP Verified Successfully!');
+        setOtp(''); // Clear OTP input field
+
+        // Navigate to the appropriate home screen based on user type
+        if (userType === 'buyer') {
+          navigation.replace('BuyerHomeScreen'); // Replace with BuyerHomeScreen
+        } else if (userType === 'seller') {
+          navigation.replace('SellerHomeScreen'); // Replace with SellerHomeScreen
+        }
+      } else {
+        setIsLoading(false); // Stop loading
+        Alert.alert('Error', 'Invalid OTP. Please try again.');
+      }
+    }, 2000); // Simulate a delay (2 seconds)
   };
 
   return (
@@ -26,11 +46,27 @@ const OTPVerification = ({ route, navigation }) => {
         value={otp}
         onChangeText={setOtp}
         keyboardType="numeric"
+        maxLength={6} // Limit OTP to 6 digits
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleVerifyOTP}>
-        <Text style={styles.buttonText}>Verify OTP</Text>
+      <TouchableOpacity
+        style={[styles.button, isLoading && styles.buttonDisabled]}
+        onPress={handleVerifyOTP}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#ffffff" />
+        ) : (
+          <Text style={styles.buttonText}>Verify OTP</Text>
+        )}
       </TouchableOpacity>
+
+      {/* You can add an option to resend OTP if needed */}
+      {!isLoading && (
+        <TouchableOpacity onPress={() => Alert.alert('OTP Sent', `OTP has been sent to ${phoneNumber}`)}>
+          <Text style={styles.resendText}>Resend OTP</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -63,17 +99,28 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingHorizontal: 10,
     backgroundColor: '#f1f8e9',
+    textAlign: 'center',
   },
   button: {
     backgroundColor: '#4caf50',
     borderRadius: 5,
     paddingVertical: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonDisabled: {
+    backgroundColor: '#a5d6a7', // Lighter green for disabled state
   },
   buttonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  resendText: {
+    fontSize: 14,
+    color: '#4caf50',
+    marginTop: 20,
+    textAlign: 'center',
   },
 });
 

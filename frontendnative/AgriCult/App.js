@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import SplashScreen from './components/splashScreen/SplashScreen';
 import BuyerRegistration from './components/ResgistrationPage/BuyerRegistration';
-import SellerRegistration from './components/ResgistrationPage/SellerRegistration'; 
+import SellerRegistration from './components/ResgistrationPage/SellerRegistration';
 import OTPVerification from './components/ResgistrationPage/OTPVerification';
+import BuyerHomeScreen from './components/BuyerHomeScreen/BuyerHomeScreen';
+import SellerHomeScreen from './components/SellerHomeScreen/SellerHomeScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
@@ -79,18 +81,26 @@ export default function App() {
           component={OTPVerification}
           options={{ title: 'Verify OTP' }} // Show a title in the header
         />
+
+        {/* Buyer Home Screen */}
+        <Stack.Screen
+          name="BuyerHomeScreen"
+          component={BuyerHomeScreen}
+          options={{ title: 'Buyer Home' }} // Customize title if needed
+        />
+
+        {/* Seller Home Screen */}
+        <Stack.Screen
+          name="SellerHomeScreen"
+          component={SellerHomeScreen}
+          options={{ title: 'Seller Home' }} // Customize title if needed
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   selectionContainer: {
     flex: 1,
     justifyContent: 'center',

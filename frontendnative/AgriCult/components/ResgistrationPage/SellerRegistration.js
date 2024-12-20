@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Alert, Button, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import { Picker } from '@react-native-picker/picker'; // Correct import
+import { View, Text, TextInput, Alert, Button, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 
 const SellerRegistration = ({ navigation }) => {
@@ -19,8 +19,8 @@ const SellerRegistration = ({ navigation }) => {
     }
     // Simulate OTP sending logic
     Alert.alert('OTP Sent', `OTP has been sent to ${phoneNumber}`);
-    // Navigate to OTPVerification screen with the phone number
-    navigation.navigate('OTPVerification', { phoneNumber });
+    // Navigate to OTPVerification screen with the phone number and userType (hardcoded to "seller")
+    navigation.navigate('OTPVerification', { phoneNumber, userType: 'seller' });
   };
 
   const handlePhotoUpload = () => {
@@ -40,12 +40,23 @@ const SellerRegistration = ({ navigation }) => {
       Alert.alert('Error', 'Please fill all required fields and accept terms.');
       return;
     }
+
+    if (email && !validateEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+
     // Proceed to OTP Verification after registration details are validated
     handleOTPVerification();
   };
 
+  const validateEmail = (email) => {
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    return regex.test(email);
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.form}>
         <Text style={styles.title}>Seller Registration</Text>
 
@@ -69,6 +80,7 @@ const SellerRegistration = ({ navigation }) => {
           placeholder="Email (optional)"
           value={email}
           onChangeText={setEmail}
+          keyboardType="email-address"
         />
 
         <View style={styles.pickerContainer}>
@@ -122,7 +134,7 @@ const SellerRegistration = ({ navigation }) => {
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

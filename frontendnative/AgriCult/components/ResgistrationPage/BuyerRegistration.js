@@ -8,6 +8,8 @@ import {
   Image,
   StyleSheet,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
 
@@ -27,8 +29,8 @@ const BuyerRegistration = ({ navigation }) => {
     }
     // Simulate OTP sending logic
     Alert.alert('OTP Sent', `OTP has been sent to ${phoneNumber}`);
-    // Navigate to OTPVerification screen with the phone number
-    navigation.navigate('OTPVerification', { phoneNumber });
+    // Navigate to OTPVerification screen with the phone number and userType (hardcoded to "buyer")
+    navigation.navigate('OTPVerification', { phoneNumber, userType: 'buyer' });
   };
 
   const handlePhotoUpload = () => {
@@ -54,9 +56,12 @@ const BuyerRegistration = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       <View style={styles.form}>
-        <Text style={styles.title}>Register</Text>
+        <Text style={styles.title}>Buyer Registration</Text>
 
         <TextInput
           style={styles.input}
@@ -123,7 +128,7 @@ const BuyerRegistration = ({ navigation }) => {
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

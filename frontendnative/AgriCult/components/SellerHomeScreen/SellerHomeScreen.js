@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -8,48 +8,76 @@ import {
   TextInput,
   StyleSheet,
   Modal,
-} from 'react-native';
+  ActivityIndicator,
+} from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import { launchImageLibrary } from "react-native-image-picker";
 
 const App = () => {
-  // Sample data for orders
-  const orders = [
-    { id: '1', product: 'Wheat', region: 'North', bid: null, bidCount: 0 },
-    { id: '2', product: 'Lime', region: 'South', bid: null, bidCount: 0 },
-    { id: '3', product: 'Grapes', region: 'North', bid: null, bidCount: 0 },
-    { id: '4', product: 'Crop Solution', region: 'East', bid: null, bidCount: 0 },
+  const initialOrders = [
+    { id: "1", product: "Wheat", region: "North", bids: [] },
+    { id: "2", product: "Lime", region: "South", bids: [] },
+    { id: "3", product: "Grapes", region: "North", bids: [] },
+    { id: "4", product: "Crop Solution", region: "East", bids: [] },
   ];
 
-  const [userRegion, setUserRegion] = useState('North');
+  const [orders, setOrders] = useState(initialOrders);
+  const [userRegion, setUserRegion] = useState("North");
   const [filteredOrders, setFilteredOrders] = useState([]);
-  const [bids, setBids] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
+  const [bidModalVisible, setBidModalVisible] = useState(false);
+  const [currentBid, setCurrentBid] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [confirmationDate, setConfirmationDate] = useState("");
 
   useEffect(() => {
-    const regionFiltered = orders.filter(order => order.region === userRegion);
+    const regionFiltered = orders.filter(
+      (order) => order.region === userRegion
+    );
     setFilteredOrders(regionFiltered);
-  }, [userRegion]);
+  }, [userRegion, orders]);
 
   const handleLogout = () => {
-    console.log('User logged out');
+    console.log("User logged out");
   };
 
-  const handleBid = (orderId, bidAmount) => {
-    setBids({ ...bids, [orderId]: bidAmount });
+  const handleMakeBid = () => {
+    if (!currentBid || isNaN(currentBid) || parseFloat(currentBid) <= 0) {
+      alert("Please enter a valid bid amount.");
+      return;
+    }
 
-    const updatedOrders = filteredOrders.map(order => {
-      if (order.id === orderId) {
-        return { ...order, bidCount: order.bidCount + 1 };
-      }
-      return order;
-    });
+    setIsLoading(true);
+    const confirmationDate = new Date().toLocaleString(); // Set confirmation date
 
-    setFilteredOrders(updatedOrders);
-    console.log(`Bid placed on order ${orderId}: ${bidAmount}`);
+    setTimeout(() => {
+      // Add the new bid with the confirmation date
+      const updatedOrders = orders.map((order) => {
+        if (order.id === selectedOrder.id) {
+          return {
+            ...order,
+            bids: [
+              ...order.bids,
+              { bid: currentBid, date: confirmationDate, images },
+            ],
+          };
+        }
+        return order;
+      });
+
+      setOrders(updatedOrders);
+      setBidModalVisible(false);
+      setCurrentBid("");
+      setImages([]);
+      setIsLoading(false);
+    }, 10); // Simulate network delay
   };
 
   const openOrderDetails = (orderId) => {
-    const order = filteredOrders.find(o => o.id === orderId);
+    const order = orders.find((o) => o.id === orderId);
     setOrderDetails(order);
     setModalVisible(true);
   };
@@ -59,43 +87,65 @@ const App = () => {
     setOrderDetails(null);
   };
 
+  const openBidForm = (order) => {
+    setSelectedOrder(order);
+    setBidModalVisible(true);
+  };
+
+  const closeBidForm = () => {
+    setBidModalVisible(false);
+    setSelectedOrder(null);
+  };
+
+  const openImagePicker = () => {
+    launchImageLibrary(
+      { mediaType: "photo", selectionLimit: 5 - images.length },
+      (response) => {
+        if (response.assets) {
+          const newImages = [...images, ...response.assets];
+          setImages(newImages);
+        }
+      }
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header Section */}
       <View style={styles.header}>
         <Text style={styles.profileText}>Hi, Wilson!</Text>
-        <Text style={styles.regionText}>Region: {userRegion}</Text>
+        <Picker
+          selectedValue={userRegion}
+          style={styles.regionPicker}
+          onValueChange={(itemValue) => setUserRegion(itemValue)}
+        >
+          <Picker.Item label="North" value="North" />
+          <Picker.Item label="South" value="South" />
+          <Picker.Item label="East" value="East" />
+          <Picker.Item label="West" value="West" />
+        </Picker>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Content Section */}
       <View style={styles.content}>
         <Text style={styles.title}>Orders in Your Region</Text>
         <FlatList
           data={filteredOrders}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.orderItem}>
               <Text style={styles.productText}>{item.product}</Text>
               <Text style={styles.regionLabel}>{item.region}</Text>
-              <TextInput
-                style={styles.bidInput}
-                placeholder="Enter your bid"
-                keyboardType="numeric"
-                onChangeText={(text) => handleBid(item.id, text)}
-              />
+              <Text style={styles.bidCountText}>
+                Number of Bids: {item.bids.length}
+              </Text>
               <TouchableOpacity
                 style={styles.bidButton}
-                onPress={() => console.log(`Bid confirmed for order ${item.id} with bid: ${bids[item.id]}`)}
+                onPress={() => openBidForm(item)}
               >
                 <Text style={styles.bidButtonText}>Make a Bid</Text>
               </TouchableOpacity>
-              <Text style={styles.bidText}>Your Bid: {bids[item.id] || 'None'}</Text>
-              <Text style={styles.bidCountText}>Number of Bids: {item.bidCount}</Text>
-              
-              {/* Order Details Button */}
               <TouchableOpacity
                 style={styles.orderDetailsButton}
                 onPress={() => openOrderDetails(item.id)}
@@ -107,7 +157,6 @@ const App = () => {
         />
       </View>
 
-      {/* Modal to Show Order Details */}
       {orderDetails && (
         <Modal
           animationType="slide"
@@ -118,11 +167,88 @@ const App = () => {
           <View style={styles.modalBackground}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Order Details</Text>
-              <Text style={styles.modalText}>Product: {orderDetails.product}</Text>
-              <Text style={styles.modalText}>Region: {orderDetails.region}</Text>
-              <Text style={styles.modalText}>Bids: {orderDetails.bidCount}</Text>
-              <TouchableOpacity style={styles.closeModalButton} onPress={closeOrderDetails}>
+              <Text style={styles.modalText}>
+                Product: {orderDetails.product}
+              </Text>
+              <Text style={styles.modalText}>
+                Region: {orderDetails.region}
+              </Text>
+              <Text style={styles.modalText}>
+                Number of Bids: {orderDetails.bids.length}
+              </Text>
+              {orderDetails.bids.map((bid, index) => (
+                <View key={index}>
+                  <Text style={styles.modalText}>Bid: {bid.bid}</Text>
+                  <Text style={styles.modalText}>Date: {bid.date}</Text>{" "}
+                  {/* Show date */}
+                  {bid.images &&
+                    bid.images.map((img, i) => (
+                      <Text key={i} style={styles.modalText}>
+                        Image {i + 1}: {img.uri}
+                      </Text>
+                    ))}
+                </View>
+              ))}
+
+              <TouchableOpacity
+                style={styles.closeModalButton}
+                onPress={closeOrderDetails}
+              >
                 <Text style={styles.closeModalText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {selectedOrder && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={bidModalVisible}
+          onRequestClose={closeBidForm}
+        >
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Submit Your Bid</Text>
+              <Text style={styles.modalText}>
+                Product: {selectedOrder.product}
+              </Text>
+              <TextInput
+                style={styles.bidInput}
+                placeholder="Enter your bid amount"
+                keyboardType="numeric"
+                value={currentBid}
+                onChangeText={setCurrentBid}
+              />
+              <TouchableOpacity
+                onPress={openImagePicker}
+                style={styles.bidButton}
+              >
+                <Text style={styles.bidButtonText}>Upload Image(s)</Text>
+              </TouchableOpacity>
+              <View>
+                {images.map((img, index) => (
+                  <Text key={index} style={styles.modalText}>
+                    Image {index + 1}: {img.fileName}
+                  </Text>
+                ))}
+              </View>
+              {isLoading ? (
+                <ActivityIndicator size="large" color="#007bff" />
+              ) : (
+                <TouchableOpacity
+                  style={styles.bidButton}
+                  onPress={handleMakeBid}
+                >
+                  <Text style={styles.bidButtonText}>Submit Quote</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={styles.closeModalButton}
+                onPress={closeBidForm}
+              >
+                <Text style={styles.closeModalText}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -133,130 +259,68 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
+  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
   header: {
-    backgroundColor: '#4CAF50',
-    padding: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  profileText: {
-    fontSize: 18,
-    color: '#fff',
-  },
-  regionText: {
-    fontSize: 16,
-    color: '#fff',
-  },
-  logoutButton: {
-    backgroundColor: '#FF5722',
-    padding: 10,
-    borderRadius: 5,
-  },
-  logoutText: {
-    color: '#fff',
-    fontSize: 14,
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  profileText: { fontSize: 18, fontWeight: "bold" },
+  regionPicker: { width: 150 },
+  logoutButton: { padding: 10, backgroundColor: "#ff5555", borderRadius: 5 },
+  logoutText: { color: "#fff" },
+  content: { marginTop: 20 },
+  title: { fontSize: 20, marginBottom: 10 },
+  orderItem: {
+    padding: 15,
+    backgroundColor: "#fff",
+    borderRadius: 8,
     marginBottom: 10,
   },
-  orderItem: {
-    backgroundColor: '#fff',
-    padding: 15,
-    marginVertical: 5,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  productText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  regionLabel: {
-    fontSize: 14,
-    color: '#757575',
-  },
-  bidInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 8,
-    marginTop: 10,
-  },
+  productText: { fontSize: 16 },
+  regionLabel: { fontSize: 14, color: "#666" },
+  bidCountText: { fontSize: 14, color: "#333" },
   bidButton: {
-    backgroundColor: '#4CAF50',
+    marginTop: 10,
+    backgroundColor: "#007bff",
     padding: 10,
     borderRadius: 5,
-    marginTop: 10,
   },
-  bidButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  bidText: {
-    marginTop: 5,
-    fontSize: 14,
-    color: '#4CAF50',
-  },
-  bidCountText: {
-    marginTop: 5,
-    fontSize: 14,
-    color: '#FF5722',
-  },
+  bidButtonText: { color: "#fff", textAlign: "center" },
   orderDetailsButton: {
-    backgroundColor: '#2196F3',
+    marginTop: 10,
+    backgroundColor: "#28a745",
     padding: 10,
     borderRadius: 5,
-    marginTop: 10,
-    alignSelf: 'flex-end',
   },
-  orderDetailsButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+  orderDetailsButtonText: { color: "#fff", textAlign: "center" },
   modalBackground: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
     width: 300,
+    padding: 20,
+    backgroundColor: "#fff",
+    borderRadius: 8,
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  modalText: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
+  modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
+  modalText: { fontSize: 14, marginBottom: 5 },
   closeModalButton: {
-    backgroundColor: '#FF5722',
+    marginTop: 10,
+    backgroundColor: "#dc3545",
     padding: 10,
     borderRadius: 5,
-    marginTop: 10,
   },
-  closeModalText: {
-    color: '#fff',
-    fontSize: 14,
+  closeModalText: { color: "#fff", textAlign: "center" },
+  bidInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
   },
 });
 

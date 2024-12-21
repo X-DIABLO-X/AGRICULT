@@ -76,6 +76,7 @@ export default function App() {
           component={SellerRegistration}
           options={{ headerShown: false }} // Hide the header
         />
+        <Stack.Screen name="OrderDetailScreen" component={OrderDetailScreen} />
 
         {/* OTP Verification Screen */}
         <Stack.Screen

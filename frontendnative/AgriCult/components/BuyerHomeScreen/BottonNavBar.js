@@ -1,46 +1,62 @@
-import React from 'react';
-import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomNavBar } from './BottonNavBar';
+import { useNavigation } from '@react-navigation/native';
+import OrderScreen from "./OrderScreen"
+import ActiveOrder from "./ActiveOrder"
+import Chat from "../ChatSystem/Chat"
 
-const handleLeftPress = () => {
-  console.log('Left button pressed!');
-};
+const PastOrder = () => <View style={styles.page}><Text>Past Order Page</Text></View>;
+const PlaceOrder = () => <View style={styles.page}><Text>Place Order Page</Text></View>;
+const Profile = () => <View style={styles.page}><Text>Profile Page</Text></View>;
 
-const handleRightPress = () => {
-  console.log('Right button pressed!');
-};
+const BottomNavBar = () => {
+  const [activePage, setActivePage] = useState('ActiveOrder');
+  const navigation = useNavigation();
 
-const BuyerHomeScreen = () => {
+  const renderPage = () => {
+    switch (activePage) {
+      case 'ActiveOrder':
+        return <ActiveOrder />;
+      case 'PastOrder':
+        return <PlaceOrder />;
+        case 'Chats':
+          return <Chat chatId="chatId_from_props_or_logic" />;
+        
+      case 'Profile':
+        return <Profile />;
+      default:
+        return <ActiveOrder />;
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Buyer Home</Text>
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => {/* Navigate to Profile */}}>
-            <Ionicons name="person-circle-outline" size={30} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {/* Logout Functionality */}}>
-            <Text style={styles.logoutText}>Logout</Text>
+      <View style={styles.content}>{renderPage()}</View>
+      <View style={styles.navBarContainer}>
+        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('ActiveOrder')}>
+          <Ionicons name="list-outline" size={24} color={activePage === 'ActiveOrder' ? 'blue' : 'black'} />
+          <Text style={[styles.navButtonText, activePage === 'ActiveOrder' && styles.activeText]}>Active Order</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('PastOrder')}>
+          <Ionicons name="time-outline" size={24} color={activePage === 'PastOrder' ? 'blue' : 'black'} />
+          <Text style={[styles.navButtonText, activePage === 'PastOrder' && styles.activeText]}>Past Order</Text>
+        </TouchableOpacity>
+        
+        <View style={styles.navButtonCenter}>
+          <TouchableOpacity style={styles.centerButton} onPress={() => navigation.navigate('PlaceOrder')}>
+            <Ionicons name="add" size={32} color="white" />
           </TouchableOpacity>
         </View>
-      </View>
-
-      {/* Other content goes here */}
-      <View style={styles.content}>
-        {/* Main content */}
-      </View>
-
-      {/* Bottom Navigation Bar */}
-      <View style={styles.bottomNavWrapper}>
-        <BottomNavBar
-          title="My App"
-          leftText="Back"
-          rightText="Menu"
-          onLeftPress={handleLeftPress}
-          onRightPress={handleRightPress}
-        />
+        
+        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Chats')}>
+          <Ionicons name="chatbubble-outline" size={24} color={activePage === 'Chats' ? 'blue' : 'black'} />
+          <Text style={[styles.navButtonText, activePage === 'Chats' && styles.activeText]}>Chats</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Profile')}>
+          <Ionicons name="person-outline" size={24} color={activePage === 'Profile' ? 'blue' : 'black'} />
+          <Text style={[styles.navButtonText, activePage === 'Profile' && styles.activeText]}>Profile</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -49,32 +65,61 @@ const BuyerHomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoutText: {
-    marginLeft: 10,
   },
   content: {
-    flex: 1, // Content takes up the remaining space
+    flex: 1,
+  },
+  page: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bottomNavWrapper: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
+    height: 80, // Reduced height
+  },
+  navBarContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    height: 80, // Reduced height to accommodate smaller text
+    borderTopWidth: 1,
+    borderTopColor: "#e0e0e0",
+    paddingHorizontal: 10,
+  },
+  navButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  navButtonCenter: {
+    position: "relative",
+    top: -20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  centerButton: {
+    width: 60,
+    height: 60,
+    backgroundColor: "#28a745", // Green color for the "Place Order" button
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 5, // Adds shadow effect for Android
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  navButtonText: {
+    fontSize: 10, // Decreased font size
+    color: "#000",
+    marginTop: 3, // Adjusted spacing between the icon and text
   },
 });
 
-export default BuyerHomeScreen;
+export default BottomNavBar;

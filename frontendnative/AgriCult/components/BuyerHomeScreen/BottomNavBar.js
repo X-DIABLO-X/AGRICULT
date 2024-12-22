@@ -5,10 +5,12 @@ import { useNavigation } from '@react-navigation/native';
 import OrderScreen from "./OrderScreen"
 import ActiveOrder from "./ActiveOrder"
 import Chat from "../ChatScreen/Chat"
+import ProfilePage from "./ProfilePage"
+
 
 const PastOrder = () => <View style={styles.page}><Text>Past Order Page</Text></View>;
 const PlaceOrder = () => <View style={styles.page}><Text>Place Order Page</Text></View>;
-const Profile = () => <View style={styles.page}><Text>Profile Page</Text></View>;
+
 
 const BottomNavBar = () => {
   const [activePage, setActivePage] = useState('ActiveOrder');
@@ -24,7 +26,7 @@ const BottomNavBar = () => {
           return <Chat chatId="chatId_from_props_or_logic" />;
         
       case 'Profile':
-        return <Profile />;
+        return <ProfilePage />;
       default:
         return <ActiveOrder />;
     }

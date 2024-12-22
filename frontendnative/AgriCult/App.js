@@ -10,27 +10,48 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import OrderScreen from "./components/BuyerHomeScreen/OrderScreen";
 import OrderDetailScreen from "./components/OrderDetailScreen";
+import login from "./components/ResgistrationPage/login";
+import NewLogin from "./components/ResgistrationPage/newlogin";
 
 const Stack = createStackNavigator();
 
 const UserTypeSelection = ({ navigation }) => {
   return (
-    <View style={styles.selectionContainer}>
-      <Text style={styles.selectionText}>Choose your account type:</Text>
+    // <View style={styles.selectionContainer}>
+    //   {/* <Text style={styles.selectionText}>Choose your account type:</Text> */}
+      
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("BuyerRegistration")}
-      >
-        <Text style={styles.buttonText}>Register as Buyer</Text>
-      </TouchableOpacity>
+    //   {/* <TouchableOpacity
+    //     style={styles.button}
+    //     onPress={() => navigation.navigate("BuyerRegistration")}
+    //   >
+    //     <Text style={styles.buttonText}>Register as Buyer</Text>
+    //   </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("SellerRegistration")}
-      >
-        <Text style={styles.buttonText}>Register as Seller</Text>
-      </TouchableOpacity>
+    //   <TouchableOpacity
+    //     style={styles.button}
+    //     onPress={() => navigation.navigate("SellerRegistration")}
+    //   >
+    //     <Text style={styles.buttonText}>Register as Seller</Text>
+    //   </TouchableOpacity>
+    //   <TouchableOpacity
+    //     style={styles.button}
+    //     onPress={() => navigation.navigate("login")}
+    //   >
+    //     <Text style={styles.buttonText}>Login</Text>
+    //   </TouchableOpacity> */}
+    // </View>
+    // <NavigationContainer>
+    //   <Stack.Navigator initialRouteName="NewLogin">
+    //     <Stack.Screen 
+    //       name="NewLogin" 
+    //       component={NewLogin} 
+    //       options={{ headerShown: false }} // Hides the default header
+    //     />
+    //   </Stack.Navigator>
+    // </NavigationContainer>
+    <View>
+
     </View>
   );
 };
@@ -55,8 +76,13 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="UserTypeSelection">
+      <Stack.Navigator initialRouteName="NewLogin">
         {/* User Type Selection Screen */}
+        <Stack.Screen 
+          name="NewLogin" 
+          component={NewLogin} 
+          options={{ headerShown: false }} // Hides the default header
+        />
         <Stack.Screen
           name="UserTypeSelection"
           component={UserTypeSelection}
@@ -69,6 +95,16 @@ export default function App() {
           component={BuyerRegistration}
           options={{ headerShown: false }} // Hide the header
         />
+        <Stack.Screen
+          name="login"
+          component={login}
+          options={{ headerShown: false }} // Hide the header
+        />
+        <Stack.Screen
+         name="newLogin"
+         component={NewLogin}
+         options={{ headerShown: false }} // Hide the header
+       />
 
         {/* Seller Registration Screen */}
         <Stack.Screen

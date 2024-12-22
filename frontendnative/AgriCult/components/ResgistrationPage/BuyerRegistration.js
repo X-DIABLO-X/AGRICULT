@@ -4,55 +4,38 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Button,
-  Image,
-  StyleSheet,
   Alert,
+  StyleSheet,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import BouncyCheckbox from 'react-native-bouncy-checkbox';
+import { Picker } from '@react-native-picker/picker';
 
 const BuyerRegistration = ({ navigation }) => {
   const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [location, setLocation] = useState('');
   const [password, setPassword] = useState('');
-  const [profilePhoto, setProfilePhoto] = useState(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
-
-  const handleOTPVerification = () => {
-    if (!phoneNumber) {
-      Alert.alert('Error', 'Please enter your phone number.');
-      return;
-    }
-    // Simulate OTP sending logic
-    Alert.alert('OTP Sent', `OTP has been sent to ${phoneNumber}`);
-    // Navigate to OTPVerification screen with the phone number and userType (hardcoded to "buyer")
-    navigation.navigate('OTPVerification', { phoneNumber, userType: 'buyer' });
-  };
-
-  const handlePhotoUpload = () => {
-    // Simulate photo upload logic
-    Alert.alert('Upload Photo', 'Photo uploaded successfully.');
-    setProfilePhoto('https://via.placeholder.com/100'); // Temporary placeholder image
-  };
 
   const handleRegister = () => {
     if (
       !fullName ||
+      !email ||
       !phoneNumber ||
       !businessName ||
       !location ||
       !password ||
       !termsAccepted
     ) {
-      Alert.alert('Error', 'Please fill all required fields and accept terms.');
+      Alert.alert('Error', 'Please fill in all required fields and accept the terms.');
       return;
     }
-    // Proceed to OTP Verification after registration details are validated
-    handleOTPVerification();
+
+    // Simulate successful registration
+    navigation.navigate('BuyerHomeScreen', { email, phoneNumber });
   };
 
   return (
@@ -63,67 +46,80 @@ const BuyerRegistration = ({ navigation }) => {
       <View style={styles.form}>
         <Text style={styles.title}>Buyer Registration</Text>
 
+        {/* Full Name */}
         <TextInput
           style={styles.input}
-          placeholder="Full Name (required)"
+          placeholder="Full Name"
           value={fullName}
           onChangeText={setFullName}
         />
 
+        {/* Email */}
         <TextInput
           style={styles.input}
-          placeholder="Phone Number (required)"
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+
+        {/* Phone Number */}
+        <TextInput
+          style={styles.input}
+          placeholder="Phone Number"
           value={phoneNumber}
           onChangeText={setPhoneNumber}
           keyboardType="phone-pad"
         />
 
+        {/* Business Name */}
         <TextInput
           style={styles.input}
-          placeholder="Business Name (required)"
+          placeholder="Business Name"
           value={businessName}
           onChangeText={setBusinessName}
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Location (required)"
-          value={location}
-          onChangeText={setLocation}
-        />
+        {/* Location Dropdown */}
+        <View style={styles.dropdown}>
+          <Picker
+            selectedValue={location}
+            onValueChange={(itemValue) => setLocation(itemValue)}
+          >
+            <Picker.Item label="Select Location" value="" />
+            <Picker.Item label="North" value="North" />
+            <Picker.Item label="South" value="South" />
+            <Picker.Item label="East" value="East" />
+            <Picker.Item label="West" value="West" />
+          </Picker>
+        </View>
 
+        {/* Password */}
         <TextInput
           style={styles.input}
-          placeholder="Password (required)"
+          placeholder="Password"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
         />
 
-        <View style={styles.photoContainer}>
-          <Text style={styles.photoLabel}>Profile Photo (optional)</Text>
-          <Button title="Upload Photo" onPress={handlePhotoUpload} />
-          {profilePhoto && (
-            <Image source={{ uri: profilePhoto }} style={styles.photoPreview} />
-          )}
-        </View>
-
-        <View style={styles.checkboxContainer}>
-          <BouncyCheckbox
-            size={25}
-            fillColor="#4caf50"
-            unfillColor="#FFFFFF"
-            text="I accept terms and policy"
-            iconStyle={{ borderColor: '#4caf50' }}
-            textStyle={{
-              textDecorationLine: 'none',
-              color: '#333',
-            }}
-            isChecked={termsAccepted}
-            onPress={(isChecked) => setTermsAccepted(isChecked)}
+        {/* Terms and Conditions */}
+        <TouchableOpacity
+          style={styles.checkboxContainer}
+          onPress={() => setTermsAccepted(!termsAccepted)}
+        >
+          <View
+            style={[
+              styles.checkbox,
+              termsAccepted ? styles.checkboxChecked : null,
+            ]}
           />
-        </View>
+          <Text style={styles.checkboxLabel}>
+            I accept the terms and conditions
+          </Text>
+        </TouchableOpacity>
 
+        {/* Register Button */}
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
@@ -137,63 +133,89 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#e8f5e9',
+    backgroundColor: '#E5E5E5',
   },
   form: {
     width: '90%',
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
     padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
+    elevation: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
   title: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#4caf50',
+    color: '#145A38',
     marginBottom: 20,
     textAlign: 'center',
   },
   input: {
-    height: 40,
-    borderColor: '#c8e6c9',
+    width: '100%',
+    marginBottom: 15,
+    padding: 15,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 10,
+    color: 'black',
+    borderColor: '#EEE',
     borderWidth: 1,
-    borderRadius: 5,
+    elevation: 2,
+  },
+  dropdown: {
+    width: '100%',
     marginBottom: 15,
     paddingHorizontal: 10,
-    backgroundColor: '#f1f8e9',
-  },
-  photoContainer: {
-    marginBottom: 15,
-    alignItems: 'center',
-  },
-  photoLabel: {
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  photoPreview: {
-    width: 100,
-    height: 100,
-    marginTop: 10,
-    borderRadius: 50,
+    borderRadius: 10,
+    borderColor: '#EEE',
+    borderWidth: 1,
+    backgroundColor: '#F9FAFB',
+    elevation: 2,
   },
   checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 15,
   },
+  checkbox: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 4,
+    backgroundColor: '#FFF',
+  },
+  checkboxChecked: {
+    backgroundColor: '#1E7C57',
+    borderColor: '#1E7C57',
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    color: '#333',
+  },
   button: {
-    backgroundColor: '#4caf50',
-    borderRadius: 5,
-    paddingVertical: 10,
+    backgroundColor: '#1E7C57',
+    padding: 15,
+    borderRadius: 10,
     alignItems: 'center',
+    marginTop: 10,
   },
   buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
+    color: '#FFFFFF',
+    fontSize: 18,
     fontWeight: 'bold',
   },
+  // button: {
+  //   width: '70%',
+  //   borderRadius: 30,
+  //   marginTop: 15,
+  //   paddingVertical: 8,
+  //   backgroundColor: '#1E7C57',
+  // },
+  
 });
 
 export default BuyerRegistration;

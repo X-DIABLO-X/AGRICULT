@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import OrderScreen from "./OrderScreen"
 import ActiveOrder from "./ActiveOrder"
-import Chat from "../ChatSystem/Chat"
+import Chat from "../ChatScreen/Chat"
 
 const PastOrder = () => <View style={styles.page}><Text>Past Order Page</Text></View>;
 const PlaceOrder = () => <View style={styles.page}><Text>Place Order Page</Text></View>;

@@ -1,17 +1,17 @@
 import { supabase } from './supabaseClient';
 
-const insertRow = async (qty, quality, ldate, edate, dlocation, region) => {
+const insertRow = async (userName, fullName, email, password, phoneNumber, businessName, location) => {
   const { data, error } = await supabase
     .from('BUYERS')
     .insert([
       {
-        "QUANTITY": qty,
-        "QUALITY": quality,
-        "LOADING_DATE": ldate,
-        "EXPIRATION": edate,
-        "PIC": {url: "https://gratisography.com/wp-content/uploads/2024/10/gratisography-cool-cat-800x525.jpg"},
-        "DELIVERY_LOCATION": dlocation,
-        "REGION": region
+        "userName": userName, 
+        "fullName": fullName, 
+        "email": email, 
+        "password": password, 
+        "phoneNumber": phoneNumber, 
+        "businessName": businessName, 
+        "location": location
       },
     ])
     .select();

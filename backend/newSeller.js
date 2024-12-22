@@ -25,12 +25,13 @@ app.use(cors({
   methods: ['GET', 'POST']
 }));
 
-// Helper functions
+// Email validation helper  
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
+// Phone number validation helper
 const isValidPhoneNumber = (phone) => {
   const phoneRegex = /^\+?[\d\s-]{10,}$/;
   return phoneRegex.test(phone);
@@ -58,19 +59,19 @@ app.get("/", (_req, res) => {
 });
 
 // Buyer registration route
-app.post("/new/buyer", async (req, res) => {
+app.post("/new/seller", async (req, res) => {
   try {
-    const { userName, fullName, email, password, phoneNumber, businessName, location } = req.body;
+    const { userName, license, email, password, phoneNumber, region, location } = req.body;
 
-    // Enhanced input validation
-    if (!userName || !fullName || !email || !password || !phoneNumber || 
-        !businessName || !location || 
-        typeof userName !== 'string' || typeof fullName !== 'string' || 
+    // Enhanced input validation - check if values exist and are strings before trimming
+    if (!userName || !license || !email || !password || !phoneNumber || 
+        !region || !location || 
+        typeof userName !== 'string' || typeof license !== 'string' || 
         typeof email !== 'string' || typeof password !== 'string' || 
-        typeof phoneNumber == 'string' || typeof businessName !== 'string' || 
+        typeof phoneNumber == 'string' || typeof region !== 'string' || 
         typeof location !== 'string' ||
         !userName.trim() || !email.trim() || 
-        !password.trim() || !businessName.trim() || 
+        !password.trim() || !region.trim() || 
         !location.trim()) {
       return res.status(400).json({
         success: false,
@@ -78,6 +79,7 @@ app.post("/new/buyer", async (req, res) => {
       });
     }
 
+    // Validate email format
     if (!isValidEmail(email)) {
       return res.status(400).json({
         success: false,
@@ -85,18 +87,47 @@ app.post("/new/buyer", async (req, res) => {
       });
     }
 
+    // Validate phone number
+    // if (!isValidPhoneNumber(phoneNumber)) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: 'Invalid phone number format'
+    //   });
+    // }
+
+    // Validate password length
+    // if (password.length < 8) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: 'Password must be at least 8 characters long'
+    //   });
+    // }
+
+    // // Check if user already exists
+    // const { data: existingUser } = await supabase
+    //   .from('USER_BUYERS')
+    //   .select('email, userName')
+    //   .or(`email.eq.${email},userName.eq.${userName}`)
+    //   .single();
+
+    // if (existingUser) {
+    //   return res.status(409).json({
+    //     success: false,
+    //     message: 'Email or username already exists'
+    //   });
+    // }
+    
+    // Insert new user with trimmed values
     const { data, error } = await supabase
-      .from('USER_BUYERS')
-      .insert([{
+      .from('USER_BUYERS').insert([{
         userName: userName.trim(),
-        fullName: fullName,
+        license: license,
         email: email.trim(),
         password: password.trim(),
         phoneNumber: phoneNumber,
-        businessName: businessName.trim(),
+        region: region.trim(),
         location: location.trim()
-      }])
-      .select();
+      }]).select();
 
     if (error) {
       console.error('Error inserting row:', error);
@@ -106,67 +137,7 @@ app.post("/new/buyer", async (req, res) => {
       });
     }
 
-    return res.status(201).json({
-      success: true,
-      message: 'Registration successful. Please verify OTP.'
-    });
-
-  } catch (error) {
-    console.error('Registration error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error during registration'
-    });
-  }
-});
-
-// Seller registration route
-app.post("/new/seller", async (req, res) => {
-  try {
-    const { userName, license, email, password, phoneNumber, region, location } = req.body;
-
-    // Enhanced input validation
-    if (!userName || !license || !email || !password || !phoneNumber || 
-        !region || 
-        typeof userName !== 'string' || typeof license !== 'string' || 
-        typeof email !== 'string' || typeof password !== 'string' || 
-        typeof phoneNumber == 'string' || typeof region !== 'string' || 
-        typeof location !== 'string' ||
-        !userName.trim() || !email.trim() || 
-        !password.trim() || !region.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'All fields are required and must be non-empty strings'
-      });
-    }
-
-    if (!isValidEmail(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid email format'
-      });
-    }
-
-    const { data, error } = await supabase
-      .from('USER_SELLER')
-      .insert([{
-        userName: userName.trim(),
-        license: license,
-        email: email.trim(),
-        password: password.trim(),
-        phoneNumber: phoneNumber,
-        region: region.trim()
-      }])
-      .select();
-
-    if (error) {
-      console.error('Error inserting row:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to register seller'
-      });
-    }
-
+    // Send success response
     return res.status(201).json({
       success: true,
       message: 'Registration successful. Please verify OTP.'

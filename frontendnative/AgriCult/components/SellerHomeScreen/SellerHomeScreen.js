@@ -14,15 +14,8 @@ import { Picker } from "@react-native-picker/picker";
 import { launchImageLibrary } from "react-native-image-picker";
 
 const App = () => {
-  const initialOrders = [
-    { id: "1", product: "Wheat", region: "North", bids: [] },
-    { id: "2", product: "Lime", region: "South", bids: [] },
-    { id: "3", product: "Grapes", region: "North", bids: [] },
-    { id: "4", product: "Crop Solution", region: "East", bids: [] },
-  ];
-
-  const [orders, setOrders] = useState(initialOrders);
-  const [userRegion, setUserRegion] = useState("North");
+  const [orders, setOrders] = useState([]);
+  const [userRegion, setUserRegion] = useState("Karepta");
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
@@ -31,7 +24,35 @@ const App = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [confirmationDate, setConfirmationDate] = useState("");
+
+  // Fetch orders from API
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('https://00z67rj6-3000.inc1.devtunnels.ms/fetch/orders');
+      const data = await response.json();
+      if (data.success) {
+        const formattedOrders = data.orders.map(order => ({
+          id: order.orderID,
+          product: `Order #${order.id}`,
+          region: order.region,
+          quantity: order.quantity,
+          quality: order.quality,
+
+          deliveryLocation: order.deliveryLocation,
+          loadingDate: order.loadingDate,
+          userName: order.userName,
+          bids: []
+        }));
+        setOrders(formattedOrders);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
 
   useEffect(() => {
     const regionFiltered = orders.filter(
@@ -51,10 +72,9 @@ const App = () => {
     }
 
     setIsLoading(true);
-    const confirmationDate = new Date().toLocaleString(); // Set confirmation date
+    const confirmationDate = new Date().toLocaleString();
 
     setTimeout(() => {
-      // Add the new bid with the confirmation date
       const updatedOrders = orders.map((order) => {
         if (order.id === selectedOrder.id) {
           return {
@@ -73,7 +93,7 @@ const App = () => {
       setCurrentBid("");
       setImages([]);
       setIsLoading(false);
-    }, 10); // Simulate network delay
+    }, 1000);
   };
 
   const openOrderDetails = (orderId) => {
@@ -109,6 +129,8 @@ const App = () => {
     );
   };
 
+  const regions = ["Karepta", "Hollesphure", "South", "East", "West"];
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -118,10 +140,9 @@ const App = () => {
           style={styles.regionPicker}
           onValueChange={(itemValue) => setUserRegion(itemValue)}
         >
-          <Picker.Item label="North" value="North" />
-          <Picker.Item label="South" value="South" />
-          <Picker.Item label="East" value="East" />
-          <Picker.Item label="West" value="West" />
+          {regions.map((region) => (
+            <Picker.Item key={region} label={region} value={region} />
+          ))}
         </Picker>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Text style={styles.logoutText}>Logout</Text>
@@ -136,7 +157,14 @@ const App = () => {
           renderItem={({ item }) => (
             <View style={styles.orderItem}>
               <Text style={styles.productText}>{item.product}</Text>
-              <Text style={styles.regionLabel}>{item.region}</Text>
+              <Text style={styles.regionLabel}>Region: {item.region}</Text>
+              <Text style={styles.quantityText}>Quantity: {item.quantity}</Text>
+              <Text style={styles.locationText}>
+                Delivery Location: {item.deliveryLocation}
+              </Text>
+              <Text style={styles.dateText}>
+                Loading Date: {item.loadingDate}
+              </Text>
               <Text style={styles.bidCountText}>
                 Number of Bids: {item.bids.length}
               </Text>
@@ -174,13 +202,21 @@ const App = () => {
                 Region: {orderDetails.region}
               </Text>
               <Text style={styles.modalText}>
+                Quantity: {orderDetails.quantity}
+              </Text>
+              <Text style={styles.modalText}>
+                Delivery Location: {orderDetails.deliveryLocation}
+              </Text>
+              <Text style={styles.modalText}>
+                Loading Date: {orderDetails.loadingDate}
+              </Text>
+              <Text style={styles.modalText}>
                 Number of Bids: {orderDetails.bids.length}
               </Text>
               {orderDetails.bids.map((bid, index) => (
-                <View key={index}>
-                  <Text style={styles.modalText}>Bid: {bid.bid}</Text>
-                  <Text style={styles.modalText}>Date: {bid.date}</Text>{" "}
-                  {/* Show date */}
+                <View key={index} style={styles.bidDetails}>
+                  <Text style={styles.modalText}>Bid Amount: {bid.bid}</Text>
+                  <Text style={styles.modalText}>Date: {bid.date}</Text>
                   {bid.images &&
                     bid.images.map((img, i) => (
                       <Text key={i} style={styles.modalText}>
@@ -189,7 +225,6 @@ const App = () => {
                     ))}
                 </View>
               ))}
-
               <TouchableOpacity
                 style={styles.closeModalButton}
                 onPress={closeOrderDetails}
@@ -212,7 +247,7 @@ const App = () => {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Submit Your Bid</Text>
               <Text style={styles.modalText}>
-                Product: {selectedOrder.product}
+                Order: {selectedOrder.product}
               </Text>
               <TextInput
                 style={styles.bidInput}
@@ -259,41 +294,89 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#f5f5f5",
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  profileText: { fontSize: 18, fontWeight: "bold" },
-  regionPicker: { width: 150 },
-  logoutButton: { padding: 10, backgroundColor: "#ff5555", borderRadius: 5 },
-  logoutText: { color: "#fff" },
-  content: { marginTop: 20 },
-  title: { fontSize: 20, marginBottom: 10 },
+  profileText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  regionPicker: {
+    width: 150,
+  },
+  logoutButton: {
+    padding: 10,
+    backgroundColor: "#ff5555",
+    borderRadius: 5,
+  },
+  logoutText: {
+    color: "#fff",
+  },
+  content: {
+    marginTop: 20,
+  },
+  title: {
+    fontSize: 20,
+    marginBottom: 10,
+  },
   orderItem: {
     padding: 15,
     backgroundColor: "#fff",
     borderRadius: 8,
     marginBottom: 10,
   },
-  productText: { fontSize: 16 },
-  regionLabel: { fontSize: 14, color: "#666" },
-  bidCountText: { fontSize: 14, color: "#333" },
+  productText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  regionLabel: {
+    fontSize: 14,
+    color: "#666",
+  },
+  quantityText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  locationText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  dateText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  bidCountText: {
+    fontSize: 14,
+    color: "#333",
+    marginTop: 5,
+  },
   bidButton: {
     marginTop: 10,
     backgroundColor: "#007bff",
     padding: 10,
     borderRadius: 5,
   },
-  bidButtonText: { color: "#fff", textAlign: "center" },
+  bidButtonText: {
+    color: "#fff",
+    textAlign: "center",
+  },
   orderDetailsButton: {
     marginTop: 10,
     backgroundColor: "#28a745",
     padding: 10,
     borderRadius: 5,
   },
-  orderDetailsButtonText: { color: "#fff", textAlign: "center" },
+  orderDetailsButtonText: {
+    color: "#fff",
+    textAlign: "center",
+  },
   modalBackground: {
     flex: 1,
     justifyContent: "center",
@@ -305,16 +388,33 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
     borderRadius: 8,
+    maxHeight: "80%",
   },
-  modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
-  modalText: { fontSize: 14, marginBottom: 5 },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  bidDetails: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
   closeModalButton: {
     marginTop: 10,
     backgroundColor: "#dc3545",
     padding: 10,
     borderRadius: 5,
   },
-  closeModalText: { color: "#fff", textAlign: "center" },
+  closeModalText: {
+    color: "#fff",
+    textAlign: "center",
+  },
   bidInput: {
     borderWidth: 1,
     borderColor: "#ccc",

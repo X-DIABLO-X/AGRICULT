@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import OrderScreen from "./OrderScreen"
 import ActiveOrder from "./ActiveOrder"
-import Chat from "../ChatScreen/Chat"
+import ChatList from "../ChatScreen/ChatList"
 import ProfilePage from "./ProfilePage"
 
 
@@ -23,7 +23,7 @@ const BottomNavBar = () => {
       case 'PastOrder':
         return <PlaceOrder />;
         case 'Chats':
-          return <Chat chatId="chatId_from_props_or_logic" />;
+          return <ChatList />;
         
       case 'Profile':
         return <ProfilePage />;

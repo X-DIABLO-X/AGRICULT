@@ -194,3 +194,31 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+app.get("/fetch/orders", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('ORDERS')
+      .select('*');
+
+    if (error) {
+      console.error('Error fetching rows:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch orders'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      orders: data
+    });
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    return res.status(500).json({ 
+      success: false,
+      message: 'Server error during registration'
+    })
+  }
+})

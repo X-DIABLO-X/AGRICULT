@@ -131,8 +131,7 @@ export default function App() {
             headerStyle: {
               backgroundColor: 'green',
               height: 100,
-              justifyContent: 'center',
-              alignItems: 'center',
+              elevation: 20
             },
             headerTintColor: '#ffffff',
             headerLeft: () => null, // Removes the back button

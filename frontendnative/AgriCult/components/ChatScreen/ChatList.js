@@ -34,9 +34,6 @@ const ChatList = () => {
 
     return (
         <View style={styles.container}>
-            {/* Fixed Header */}
-            <Text style={styles.header}>Chat List</Text>
-
             {/* Scrollable Chat List */}
             <ScrollView>
                 {chatList.map((chat) => (
@@ -55,12 +52,11 @@ const ChatList = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#ECE5DD', // WhatsApp background shade
-        padding: 10,
+        backgroundColor: '#ECE5DD', 
     },
     header: {
         fontSize: 20,
-        color: '#075E54', // WhatsApp green header text
+        color: '#075E54',
         marginBottom: 10,
         fontWeight: 'bold',
         textAlign: 'center',
@@ -69,14 +65,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 10,
-        backgroundColor: '#FFFFFF', // White background for chat items
+        backgroundColor: '#FFFFFF', 
         marginBottom: 5,
         borderRadius: 10,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 }, // Subtle shadow
+        shadowOffset: { width: 0, height: 1 }, 
         shadowOpacity: 0.1,
         shadowRadius: 2,
-        elevation: 1, // Adds depth on Android
+        elevation: 1, 
     },
     profilePicture: {
         width: 50,
@@ -86,7 +82,7 @@ const styles = StyleSheet.create({
     },
     chatListText: {
         fontSize: 16,
-        color: '#000000', // Black text for the chat name
+        color: '#000000',
         fontWeight: 'bold',
     },
 });

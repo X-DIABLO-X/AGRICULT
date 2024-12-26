@@ -32,7 +32,7 @@ const App = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('https://00z67rj6-3000.inc1.devtunnels.ms/fetch/orders');
+      const response = await fetch('https://00z67rj6-3000.inc1.devtunnels.ms/fetch/orders/');
       const data = await response.json();
       if (data.success) {
         const formattedOrders = data.orders.map(order => ({
@@ -129,7 +129,7 @@ const App = () => {
     );
   };
 
-  const regions = ["Karepta", "Hollesphure", "South", "East", "West"];
+  const regions = ["Karepta", "Hollesphure", "Chamarajanagar", "Mandya", "Polyachi", "Madhur"];
 
   return (
     <SafeAreaView style={styles.container}>

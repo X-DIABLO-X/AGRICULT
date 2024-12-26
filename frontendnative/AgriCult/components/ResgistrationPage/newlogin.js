@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Image, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { StyleSheet, View, Text, Image, TouchableOpacity, Modal, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 
@@ -8,11 +8,73 @@ const NewLogin = () => {
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const navigation = useNavigation(); // Hook for navigation
+  const navigation = useNavigation();
 
-  const handleLogin = () => {
-    console.log('Login clicked with:', email);
+  const validateInputs = () => {
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return false;
+    }
+    return true;
+  };
+
+  const handleLogin = async () => {
+    try {
+      if (!validateInputs()) return;
+
+      setIsLoading(true);
+      setError('');
+      
+      const response = await fetch(`https://00z67rj6-3000.inc1.devtunnels.ms/user/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      if (data.success) {
+        Alert.alert(
+          'Success',
+          'Login successful!',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                if (data.session.userType === 'buyer') {
+                  navigation.replace('BuyerHomeScreen');
+                } else {
+                  navigation.replace('SellerHomeScreen');
+                }
+              },
+            },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.message || 'An error occurred during login');
+      
+      Alert.alert(
+        'Login Failed',
+        error.message || 'Please check your credentials and try again',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -30,9 +92,9 @@ const NewLogin = () => {
   const handleRoleSelection = (role) => {
     setIsModalVisible(false);
     if (role === 'Buyer') {
-      navigation.navigate('BuyerRegistration'); // Navigate to BuyerRegistration.js
+      navigation.navigate('BuyerRegistration');
     } else if (role === 'Seller') {
-      navigation.navigate('SellerRegistration'); // Navigate to SellerRegistration.js
+      navigation.navigate('SellerRegistration');
     }
   };
 
@@ -49,12 +111,20 @@ const NewLogin = () => {
         <Text style={styles.title}>Welcome to AgriCult!</Text>
         <Text style={styles.subtitle}>Login to continue</Text>
 
+        {/* Error Message */}
+        {error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : null}
+
         {/* Email Input */}
         <TextInput
           style={styles.input}
           label="Email"
           value={email}
-          onChangeText={(text) => setEmail(text)}
+          onChangeText={(text) => {
+            setEmail(text);
+            setError('');
+          }}
           mode="outlined"
           placeholder="Enter your email"
           placeholderTextColor="#888"
@@ -67,7 +137,10 @@ const NewLogin = () => {
           style={styles.input}
           label="Password"
           value={password}
-          onChangeText={(text) => setPassword(text)}
+          onChangeText={(text) => {
+            setPassword(text);
+            setError('');
+          }}
           secureTextEntry={!isPasswordVisible}
           right={
             <TextInput.Icon
@@ -82,15 +155,20 @@ const NewLogin = () => {
           activeOutlineColor="#1E7C57"
         />
 
-        {/* Login Button */}
-        <Button 
-          mode="contained" 
-          onPress={handleLogin} 
-          style={styles.button}
-          labelStyle={styles.buttonText}
-        >
-          Login
-        </Button>
+        {/* Login Button with Loading State */}
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#1E7C57" style={styles.loader} />
+        ) : (
+          <Button 
+            mode="contained" 
+            onPress={handleLogin} 
+            style={styles.button}
+            labelStyle={styles.buttonText}
+            disabled={isLoading}
+          >
+            Login
+          </Button>
+        )}
 
         {/* Signup Link */}
         <TouchableOpacity onPress={openRoleSelectionModal}>
@@ -139,7 +217,6 @@ const NewLogin = () => {
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -241,6 +318,14 @@ const styles = StyleSheet.create({
   modalCancelButtonText: {
     fontSize: 14,
     color: '#555',
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  loader: {
+    marginVertical: 15,
   },
 });
 

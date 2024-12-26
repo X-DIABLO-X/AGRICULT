@@ -47,18 +47,18 @@ const BuyerRegistration = ({ navigation }) => {
       businessName,
       location,
     };
-    
 
     axios
       .post('https://00z67rj6-3000.inc1.devtunnels.ms/new/buyer', userData)
       .then((response) => {
         console.log('Success:', response.data);
-        Alert.alert('Success', 'Registration successful!');
+        Alert.alert('Success', 'Registration successful! Please check your email for verification.');
         navigation.navigate('BuyerHomeScreen', { email, phoneNumber });
       })
       .catch((error) => {
         console.error('Error:', error.response?.data || error.message);
-        Alert.alert('Error', 'Registration failed. Please try again.');
+        const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+        Alert.alert('Error', errorMessage);
       });
   };
 

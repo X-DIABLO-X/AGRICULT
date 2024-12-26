@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,86 +9,106 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 
 const SellerRegistration = ({ navigation }) => {
-  const [licenseNumber, setLicenseNumber] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [region, setRegion] = useState('');
-  const [password, setPassword] = useState('');
-  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [formData, setFormData] = useState({
+    userName: '',
+    license: '',
+    email: '',
+    password: '',
+    phoneNumber: '',
+    region: '',
+  });
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [locations, setLocations] = useState([]);
-  const [loadingLocations, setLoadingLocations] = useState(true);
+  const [profilePhoto, setProfilePhoto] = useState(null);
 
-  useEffect(() => {
-    // Fetch locations from buyer's API
-    axios
-      .get('https://example.com/api/buyer/locations') // Replace with actual API
-      .then((response) => {
-        setLocations(response.data.locations); // Assume API returns { locations: [...] }
-        setLoadingLocations(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching locations:', error);
-        Alert.alert('Error', 'Failed to load locations.');
-        setLoadingLocations(false);
-      });
-  }, []);
-
-  const handleRegister = () => {
-    if (
-      !licenseNumber ||
-      !phoneNumber ||
-      !region ||
-      !password ||
-      !termsAccepted
-    ) {
-      Alert.alert('Error', 'Please fill all required fields and accept the terms.');
-      return;
-    }
-
-    if (email && !validateEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address.');
-      return;
-    }
-
-    const userData = {
-      userName: licenseNumber, // Assuming licenseNumber is the username
-      license: licenseNumber,
-      email,
-      password,
-      phoneNumber: parseInt(phoneNumber), // Convert to number
-      region,
-    };
-
-    console.log('User data to send:', userData);
-
-    axios
-      .post('https://00z67rj6-3000.inc1.devtunnels.ms/new/seller', userData)
-      .then((response) => {
-        console.log('Success:', response.data);
-        Alert.alert('Success', 'Registration successful!');
-        navigation.navigate('SellerHomeScreen', { phoneNumber, userType: 'seller' });
-      })
-      .catch((error) => {
-        console.error('Error:', error.response?.data || error.message);
-        Alert.alert('Error', 'Registration failed. Please try again.');
-      });
-  };
+  // Fixed array of regions
+  const regions = [
+    "Karepta", "Hollesphure", "Chamarajanagar", "Mandya", "Polyachi", "Madhur"
+  ];
 
   const validateEmail = (email) => {
-    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
+  };
+
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^\+?[\d\s-]{10,}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const validateForm = () => {
+    if (!formData.userName || !formData.license || !formData.email || 
+        !formData.password || !formData.phoneNumber || !formData.region) {
+      Alert.alert('Error', 'All fields are required.');
+      return false;
+    }
+
+    if (!validateEmail(formData.email)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return false;
+    }
+
+    if (!validatePhoneNumber(formData.phoneNumber)) {
+      Alert.alert('Error', 'Please enter a valid phone number (minimum 10 digits).');
+      return false;
+    }
+
+    if (!termsAccepted) {
+      Alert.alert('Error', 'Please accept the terms and conditions.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleRegister = async () => {
+    if (!validateForm()) return;
+
+    try {
+      const response = await axios.post('https://00z67rj6-3000.inc1.devtunnels.ms/new/seller', {
+        userName: formData.userName.trim(),
+        license: formData.license,
+        email: formData.email.trim(),
+        password: formData.password,
+        phoneNumber: formData.phoneNumber,
+        region: formData.region.trim()
+      });
+      console.log(response.data);
+      if (response.data.success) {
+        Alert.alert(
+          'Success',
+          'Registration successful! Please check your email for verification.',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('SellerHomeScreen', { 
+                phoneNumber: formData.phoneNumber, 
+                userType: 'seller' 
+              })
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+      Alert.alert('Error', errorMessage);
+    }
   };
 
   const handlePhotoUpload = () => {
     Alert.alert('Upload Photo', 'Photo uploaded successfully.');
-    setProfilePhoto('https://via.placeholder.com/100'); // Temporary placeholder image
+    setProfilePhoto('https://via.placeholder.com/100');
   };
 
   return (
@@ -99,63 +119,57 @@ const SellerRegistration = ({ navigation }) => {
       <View style={styles.form}>
         <Text style={styles.title}>Seller Registration</Text>
 
-        {/* License Number */}
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={formData.userName}
+          onChangeText={(value) => handleInputChange('userName', value)}
+        />
+
         <TextInput
           style={styles.input}
           placeholder="License Number"
-          value={licenseNumber}
-          onChangeText={setLicenseNumber}
+          value={formData.license}
+          onChangeText={(value) => handleInputChange('license', value)}
         />
 
-        {/* Phone Number */}
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={formData.email}
+          onChangeText={(value) => handleInputChange('email', value)}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+
         <TextInput
           style={styles.input}
           placeholder="Phone Number"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
+          value={formData.phoneNumber}
+          onChangeText={(value) => handleInputChange('phoneNumber', value)}
           keyboardType="phone-pad"
         />
 
-        {/* Email */}
-        <TextInput
-          style={styles.input}
-          placeholder="Email (optional)"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-
-        {/* Region Dropdown */}
         <View style={styles.dropdown}>
-          {loadingLocations ? (
-            <ActivityIndicator size="small" color="#1E7C57" />
-          ) : (
-            <Picker
-              selectedValue={region}
-              onValueChange={(itemValue) => setRegion(itemValue)}
-            >
-              <Picker.Item label="Select Region" value="" />
-              {locations.map((location) => (
-                <Picker.Item
-                  key={location.id} // Replace with the unique key from API data
-                  label={location.name}
-                  value={location.name}
-                />
-              ))}
-            </Picker>
-          )}
+          <Picker
+            selectedValue={formData.region}
+            onValueChange={(value) => handleInputChange('region', value)}
+          >
+            <Picker.Item label="Select Region" value="" />
+            {regions.map((region) => (
+              <Picker.Item key={region} label={region} value={region} />
+            ))}
+          </Picker>
         </View>
 
-        {/* Password */}
         <TextInput
           style={styles.input}
           placeholder="Password"
           secureTextEntry
-          value={password}
-          onChangeText={setPassword}
+          value={formData.password}
+          onChangeText={(value) => handleInputChange('password', value)}
         />
 
-        {/* Profile Photo */}
         <View style={styles.photoContainer}>
           <TouchableOpacity onPress={handlePhotoUpload}>
             <Text style={styles.photoLabel}>Upload Profile Photo</Text>
@@ -165,7 +179,6 @@ const SellerRegistration = ({ navigation }) => {
           )}
         </View>
 
-        {/* Terms and Conditions */}
         <TouchableOpacity
           style={styles.checkboxContainer}
           onPress={() => setTermsAccepted(!termsAccepted)}
@@ -181,7 +194,6 @@ const SellerRegistration = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
 
-        {/* Register Button */}
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>

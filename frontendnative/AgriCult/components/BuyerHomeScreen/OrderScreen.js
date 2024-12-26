@@ -55,7 +55,7 @@ const OrderScreen = ({navigation}) => {
     console.log(orderData);
 
     const response = await axios.post(
-      "https://6qqsh8l1-3000.inc1.devtunnels.ms/new/order",
+      "https://00z67rj6-3000.inc1.devtunnels.ms/new/order/",
       orderData
     );
     

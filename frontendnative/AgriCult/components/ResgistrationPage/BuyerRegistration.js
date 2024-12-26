@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+
 import {
   View,
   Text,
@@ -12,6 +14,7 @@ import {
 import { Picker } from '@react-native-picker/picker';
 
 const BuyerRegistration = ({ navigation }) => {
+  const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -22,6 +25,7 @@ const BuyerRegistration = ({ navigation }) => {
 
   const handleRegister = () => {
     if (
+      !username ||
       !fullName ||
       !email ||
       !phoneNumber ||
@@ -34,8 +38,28 @@ const BuyerRegistration = ({ navigation }) => {
       return;
     }
 
-    // Simulate successful registration
-    navigation.navigate('BuyerHomeScreen', { email, phoneNumber });
+    const userData = {
+      userName: username,
+      fullName,
+      email,
+      password,
+      phoneNumber,
+      businessName,
+      location,
+    };
+    
+
+    axios
+      .post('https://00z67rj6-3000.inc1.devtunnels.ms/new/buyer', userData)
+      .then((response) => {
+        console.log('Success:', response.data);
+        Alert.alert('Success', 'Registration successful!');
+        navigation.navigate('BuyerHomeScreen', { email, phoneNumber });
+      })
+      .catch((error) => {
+        console.error('Error:', error.response?.data || error.message);
+        Alert.alert('Error', 'Registration failed. Please try again.');
+      });
   };
 
   return (
@@ -45,6 +69,14 @@ const BuyerRegistration = ({ navigation }) => {
     >
       <View style={styles.form}>
         <Text style={styles.title}>Buyer Registration</Text>
+
+        {/* Username */}
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+        />
 
         {/* Full Name */}
         <TextInput
@@ -87,10 +119,12 @@ const BuyerRegistration = ({ navigation }) => {
             onValueChange={(itemValue) => setLocation(itemValue)}
           >
             <Picker.Item label="Select Location" value="" />
-            <Picker.Item label="North" value="North" />
-            <Picker.Item label="South" value="South" />
-            <Picker.Item label="East" value="East" />
-            <Picker.Item label="West" value="West" />
+            <Picker.Item label="Chamarajanagar" value="Chamarajanagar" />
+            <Picker.Item label="Madhur" value="Madhur" />
+            <Picker.Item label="Karepta" value="Karepta" />
+            <Picker.Item label="Mandya" value="Mandya" />
+            <Picker.Item label="Hollesphure" value="Hollesphure" />
+            <Picker.Item label="Polyachi" value="Polyachi" />
           </Picker>
         </View>
 
@@ -208,14 +242,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  // button: {
-  //   width: '70%',
-  //   borderRadius: 30,
-  //   marginTop: 15,
-  //   paddingVertical: 8,
-  //   backgroundColor: '#1E7C57',
-  // },
-  
 });
 
 export default BuyerRegistration;

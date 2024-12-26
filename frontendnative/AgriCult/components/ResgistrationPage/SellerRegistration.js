@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,10 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import axios from 'axios';
 
 const SellerRegistration = ({ navigation }) => {
   const [licenseNumber, setLicenseNumber] = useState('');
@@ -20,6 +22,23 @@ const SellerRegistration = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [locations, setLocations] = useState([]);
+  const [loadingLocations, setLoadingLocations] = useState(true);
+
+  useEffect(() => {
+    // Fetch locations from buyer's API
+    axios
+      .get('https://example.com/api/buyer/locations') // Replace with actual API
+      .then((response) => {
+        setLocations(response.data.locations); // Assume API returns { locations: [...] }
+        setLoadingLocations(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching locations:', error);
+        Alert.alert('Error', 'Failed to load locations.');
+        setLoadingLocations(false);
+      });
+  }, []);
 
   const handleRegister = () => {
     if (
@@ -38,8 +57,28 @@ const SellerRegistration = ({ navigation }) => {
       return;
     }
 
-    // Navigate to OTP Verification after successful registration
-    navigation.navigate('SellerHomeScreen', { phoneNumber, userType: 'seller' });
+    const userData = {
+      userName: licenseNumber, // Assuming licenseNumber is the username
+      license: licenseNumber,
+      email,
+      password,
+      phoneNumber: parseInt(phoneNumber), // Convert to number
+      region,
+    };
+
+    console.log('User data to send:', userData);
+
+    axios
+      .post('https://00z67rj6-3000.inc1.devtunnels.ms/new/seller', userData)
+      .then((response) => {
+        console.log('Success:', response.data);
+        Alert.alert('Success', 'Registration successful!');
+        navigation.navigate('SellerHomeScreen', { phoneNumber, userType: 'seller' });
+      })
+      .catch((error) => {
+        console.error('Error:', error.response?.data || error.message);
+        Alert.alert('Error', 'Registration failed. Please try again.');
+      });
   };
 
   const validateEmail = (email) => {
@@ -88,16 +127,23 @@ const SellerRegistration = ({ navigation }) => {
 
         {/* Region Dropdown */}
         <View style={styles.dropdown}>
-          <Picker
-            selectedValue={region}
-            onValueChange={(itemValue) => setRegion(itemValue)}
-          >
-            <Picker.Item label="Select Region" value="" />
-            <Picker.Item label="North" value="North" />
-            <Picker.Item label="South" value="South" />
-            <Picker.Item label="East" value="East" />
-            <Picker.Item label="West" value="West" />
-          </Picker>
+          {loadingLocations ? (
+            <ActivityIndicator size="small" color="#1E7C57" />
+          ) : (
+            <Picker
+              selectedValue={region}
+              onValueChange={(itemValue) => setRegion(itemValue)}
+            >
+              <Picker.Item label="Select Region" value="" />
+              {locations.map((location) => (
+                <Picker.Item
+                  key={location.id} // Replace with the unique key from API data
+                  label={location.name}
+                  value={location.name}
+                />
+              ))}
+            </Picker>
+          )}
         </View>
 
         {/* Password */}

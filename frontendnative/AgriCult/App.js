@@ -12,6 +12,7 @@ import OrderScreen from "./components/BuyerHomeScreen/OrderScreen";
 import OrderDetailScreen from "./components/OrderDetailScreen";
 import login from "./components/ResgistrationPage/login";
 import NewLogin from "./components/ResgistrationPage/newlogin";
+import Chat from "./components/ChatScreen/Chat";
 
 const Stack = createStackNavigator();
 
@@ -125,8 +126,19 @@ export default function App() {
         <Stack.Screen
           name="BuyerHomeScreen"
           component={BuyerHomeScreen}
-          options={{ title: "Buyer Home" }} // Customize title if needed
+          options={{
+            title: "AGRICULT",
+            headerStyle: {
+              backgroundColor: 'green',
+              height: 100,
+              elevation: 20
+            },
+            headerTintColor: '#ffffff',
+            headerLeft: () => null, // Removes the back button
+          }}
         />
+
+
 
         {/* Seller Home Screen */}
         <Stack.Screen
@@ -140,6 +152,7 @@ export default function App() {
           component={OrderDetailScreen}
           options={{ title: "Order Details" }}
         />
+      <Stack.Screen name = "Chat" component={Chat}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -6,9 +6,8 @@ import dotenv from "dotenv";
 // Load environment variables first
 dotenv.config();
 
-const SUPABASE_URL = "https://pojuqqnftsunpiutlyrn.supabase.co";
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvanVxcW5mdHN1bnBpdXRseXJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2ODAwOTIsImV4cCI6MjA1MDI1NjA5Mn0.0QASIiNcOib_pClL7XMi45_MoK3cMNjLbmvfhp982UQ";
+const SUPABASE_URL = 'https://pojuqqnftsunpiutlyrn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvanVxcW5mdHN1bnBpdXRseXJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2ODAwOTIsImV4cCI6MjA1MDI1NjA5Mn0.0QASIiNcOib_pClL7XMi45_MoK3cMNjLbmvfhp982UQ';
 
 // Validate environment variables
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
@@ -65,15 +64,7 @@ app.get("/", (_req, res) => {
 // Buyer registration route
 app.post("/new/buyer", async (req, res) => {
   try {
-    const {
-      userName,
-      fullName,
-      email,
-      password,
-      phoneNumber,
-      businessName,
-      location,
-    } = req.body;
+    const { userName, fullName, email, password, phoneNumber, businessName, location } = req.body;
 
     // Enhanced input validation
     if (
@@ -137,6 +128,7 @@ app.post("/new/buyer", async (req, res) => {
       success: true,
       message: "Registration successful. Please verify OTP.",
     });
+
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(500).json({
@@ -207,7 +199,7 @@ app.post("/new/seller", async (req, res) => {
       .select();
 
     if (error) {
-      console.error("Error inserting row:", error);
+      console.error('Error inserting row:', error);
       return res.status(500).json({
         success: false,
         message: "Failed to register seller",
@@ -300,3 +292,33 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+app.get("/fetch/orders", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('ORDERS')
+      .select('*');
+
+    if (error) {
+      console.error('Error fetching rows:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch orders'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      orders: data
+    });
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    return res.status(500).json({ 
+      success: false,
+      message: 'Server error during registration'
+    })
+  }
+})
+

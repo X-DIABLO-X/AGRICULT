@@ -53,7 +53,7 @@ const NewLogin = () => {
             {
               text: 'OK',
               onPress: () => {
-                if (data.session.userType === 'buyer') {
+                if (data.userType === 'buyer') {
                   navigation.replace('BuyerHomeScreen');
                 } else {
                   navigation.replace('SellerHomeScreen');

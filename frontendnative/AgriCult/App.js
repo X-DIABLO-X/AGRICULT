@@ -13,6 +13,8 @@ import OrderDetailScreen from "./components/OrderDetailScreen";
 import login from "./components/ResgistrationPage/login";
 import NewLogin from "./components/ResgistrationPage/newlogin";
 import Chat from "./components/ChatScreen/Chat";
+import ChatList from "./components/ChatScreen/ChatList";
+import PastBidsScreen from "./components/SellerHomeScreen/PastBidsScreen";
 
 const Stack = createStackNavigator();
 
@@ -84,6 +86,9 @@ export default function App() {
           component={NewLogin} 
           options={{ headerShown: false }} // Hides the default header
         />
+        <Stack.Screen name="ChatList" component={ChatList} />
+        <Stack.Screen name="PastBidsScreen" component={PastBidsScreen} />
+        
         <Stack.Screen
           name="UserTypeSelection"
           component={UserTypeSelection}
@@ -144,7 +149,7 @@ export default function App() {
         <Stack.Screen
           name="SellerHomeScreen"
           component={SellerHomeScreen}
-          options={{ title: "Seller Home" }} // Customize title if needed
+          options={{ headerShown: false }} // Customize title if needed
         />
         <Stack.Screen name="PlaceOrder" component={OrderScreen} />
         <Stack.Screen

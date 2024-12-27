@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, Modal, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NewLogin = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +20,16 @@ const NewLogin = () => {
       return false;
     }
     return true;
+  };
+
+  const storeUserData = async (token, user) => {
+    try {
+      await AsyncStorage.setItem('userToken', token);
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+    } catch (error) {
+      console.error('Error storing user data:', error);
+      throw new Error('Failed to store user credentials');
+    }
   };
 
   const handleLogin = async () => {
@@ -46,6 +57,12 @@ const NewLogin = () => {
       }
 
       if (data.success) {
+        // Store the token and user type
+        console.log(data)
+        console.log(data.session.access_token, data.user);
+        await storeUserData(data.session.access_token, data.user);
+        
+
         Alert.alert(
           'Success',
           'Login successful!',
@@ -101,22 +118,18 @@ const NewLogin = () => {
   return (
     <View style={styles.container}>
       <View style={styles.innerContainer}>
-        {/* Logo */}
         <Image 
           source={require('../../assets/logo.jpg')}
           style={styles.logo}
         />
 
-        {/* Title and Subtitle */}
         <Text style={styles.title}>Welcome to AgriCult!</Text>
         <Text style={styles.subtitle}>Login to continue</Text>
 
-        {/* Error Message */}
         {error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : null}
 
-        {/* Email Input */}
         <TextInput
           style={styles.input}
           label="Email"
@@ -132,7 +145,6 @@ const NewLogin = () => {
           keyboardType="email-address"
         />
 
-        {/* Password Input */}
         <TextInput
           style={styles.input}
           label="Password"
@@ -155,7 +167,6 @@ const NewLogin = () => {
           activeOutlineColor="#1E7C57"
         />
 
-        {/* Login Button with Loading State */}
         {isLoading ? (
           <ActivityIndicator size="large" color="#1E7C57" style={styles.loader} />
         ) : (
@@ -170,7 +181,6 @@ const NewLogin = () => {
           </Button>
         )}
 
-        {/* Signup Link */}
         <TouchableOpacity onPress={openRoleSelectionModal}>
           <Text style={styles.signupText}>
             Don't have an account?{' '}
@@ -179,7 +189,6 @@ const NewLogin = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Role Selection Modal */}
       <Modal
         transparent={true}
         visible={isModalVisible}

@@ -351,8 +351,6 @@ app.post("/new/order", async (req, res) => {
           loadingDate,
           deliveryLocation,
           userName,
-          status: "PENDING",
-          created_at: new Date().toISOString()
         },
       ])
       .select();

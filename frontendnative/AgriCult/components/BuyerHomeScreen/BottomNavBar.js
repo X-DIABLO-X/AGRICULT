@@ -6,10 +6,9 @@ import OrderScreen from "./OrderScreen"
 import ActiveOrder from "./ActiveOrder"
 import ChatList from "../ChatScreen/ChatList"
 import ProfilePage from "./ProfilePage"
+import PastOrder from "./PastOrder"
 
 
-const PastOrder = () => <View style={styles.page}><Text>Past Order Page</Text></View>;
-const PlaceOrder = () => <View style={styles.page}><Text>Place Order Page</Text></View>;
 
 
 const BottomNavBar = () => {
@@ -21,7 +20,7 @@ const BottomNavBar = () => {
       case 'ActiveOrder':
         return <ActiveOrder />;
       case 'PastOrder':
-        return <PlaceOrder />;
+        return <PastOrder />;
         case 'Chats':
           return <ChatList />;
         

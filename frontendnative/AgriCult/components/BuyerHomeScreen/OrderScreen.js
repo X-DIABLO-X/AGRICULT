@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -12,6 +12,7 @@ import { Picker } from "@react-native-picker/picker";
 import RadioGroup from "react-native-radio-buttons-group";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const OrderScreen = ({navigation}) => {
   const [quantity, setQuantity] = useState("12");
@@ -20,6 +21,28 @@ const OrderScreen = ({navigation}) => {
   const [loadingDate, setLoadingDate] = useState(new Date());
   const [deliveryLocation, setDeliveryLocation] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem('user');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUserData(parsedUser);
+          // Pre-fill delivery location with user's location if available
+          if (parsedUser.location) {
+            setDeliveryLocation(parsedUser.location);
+          }
+        }
+      } catch (error) {
+        console.error('Error retrieving user data:', error);
+        Alert.alert('Error', 'Failed to load user data');
+      }
+    };
+
+    getUserData();
+  }, []);
 
   const quantities = ["12", "15", "18", "25", "30"];
   const regions = [
@@ -43,34 +66,60 @@ const OrderScreen = ({navigation}) => {
       return;
     }
 
-    // Submit order to backend
+    if (!userData) {
+      Alert.alert("Error", "User data not available. Please login again.");
+      return;
+    }
+
+    // Submit order to backend with user data
     const orderData = {
       quantity,
       qualityType,
       region,
       loadingDate,
       deliveryLocation,
-      userName: "DIABLO",
+      userName: userData.userName,
+      businessName: userData.businessName,
+      email: userData.email,
+      phoneNumber: userData.phoneNumber,
     };
-    console.log(orderData);
-
-    const response = await axios.post(
-      "https://00z67rj6-3000.inc1.devtunnels.ms/new/order/",
-      orderData
-    );
     
-    if (response.data.success) {
-      Alert.alert("Success", "Order submitted! RFQ valid for 24 hours",
-        [{ text: "OK", onPress: () => navigation.goBack() }]
+    try {
+      const response = await axios.post(
+        "https://00z67rj6-3000.inc1.devtunnels.ms/new/order/",
+        orderData
       );
-      navigation.goBack();
-    } else {
-      Alert.alert("Error", "Failed to submit order. Please try again");
+      
+      if (response.data.success) {
+        Alert.alert(
+          "Success", 
+          "Order submitted! RFQ valid for 24 hours",
+          [{ text: "OK", onPress: () => navigation.goBack() }]
+        );
+      } else {
+        Alert.alert("Error", "Failed to submit order. Please try again");
+      }
+    } catch (error) {
+      console.error('Error submitting order:', error);
+      Alert.alert("Error", "Failed to submit order. Please check your connection");
     }
   };
 
+  if (!userData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading user data...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
+      <View style={styles.userInfo}>
+        <Text style={styles.businessName}>{userData.businessName}</Text>
+        <Text style={styles.userName}>@{userData.userName}</Text>
+      </View>
+
       <Text style={styles.label}>Quantity (tons)</Text>
       <View style={styles.pickerContainer}>
         <Picker
@@ -91,7 +140,7 @@ const OrderScreen = ({navigation}) => {
           onPress={setQualityType}
           selectedId={qualityType}
           containerStyle={styles.radioGroup}
-          flexDirection="row" // Display radio buttons in a row
+          flexDirection="row"
         />
       </View>
 
@@ -148,38 +197,60 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f7f7f7", // Light gray background for a soft look
+    backgroundColor: "#f7f7f7",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userInfo: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+    elevation: 2,
+  },
+  businessName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  userName: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
   },
   label: {
     fontSize: 16,
     fontWeight: "bold",
     marginTop: 15,
     marginBottom: 5,
-    color: "#333", // Dark text for contrast
+    color: "#333",
   },
   pickerContainer: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 10,
     marginBottom: 15,
-    backgroundColor: "#fff", // White background for pickers
-    paddingHorizontal: 10, // Add horizontal padding
+    backgroundColor: "#fff",
+    paddingHorizontal: 10,
   },
   picker: {
-    height: 50, // Set appropriate height
-    width: "100%", // Make sure it's full width to accommodate long text
+    height: 50,
+    width: "100%",
     backgroundColor: "#fff",
     borderRadius: 10,
-    justifyContent: "center", // Center the text inside
-    paddingHorizontal: 10, // Padding to prevent text cut-off
+    justifyContent: "center",
+    paddingHorizontal: 10,
   },
   radioGroupContainer: {
     marginBottom: 15,
-    flexDirection: "row", // Align radio buttons in a row
-    justifyContent: "space-around", // Space them evenly
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   radioGroup: {
-    flexDirection: "row", // Ensures horizontal alignment of radio buttons
+    flexDirection: "row",
     marginBottom: 15,
   },
   input: {
@@ -188,7 +259,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 15,
-    backgroundColor: "#fff", // White background for input
+    backgroundColor: "#fff",
   },
   dateButton: {
     borderWidth: 1,
@@ -196,7 +267,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 15,
-    backgroundColor: "#fff", // White background for date button
+    backgroundColor: "#fff",
   },
   dateButtonText: {
     fontSize: 16,
@@ -204,13 +275,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   submitButton: {
-    backgroundColor: "#28a745", // Green background for the submit button
+    backgroundColor: "#28a745",
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
     marginTop: 20,
     marginBottom: 30,
-    elevation: 5, // Add shadow for Android
+    elevation: 5,
   },
   submitButtonText: {
     color: "#fff",

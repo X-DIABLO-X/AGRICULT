@@ -15,6 +15,7 @@ import NewLogin from "./components/ResgistrationPage/newlogin";
 import Chat from "./components/ChatScreen/Chat";
 import ChatList from "./components/ChatScreen/ChatList";
 import PastBidsScreen from "./components/SellerHomeScreen/PastBidsScreen";
+import BidDetailPage from "./components/BuyerHomeScreen/bidDetailPage";
 
 const Stack = createStackNavigator();
 
@@ -158,6 +159,9 @@ export default function App() {
           options={{ title: "Order Details" }}
         />
       <Stack.Screen name = "Chat" component={Chat}/>
+      
+      <Stack.Screen name="BidDetailPage" component={BidDetailPage} options={{ title: "Bid Details" }}/>
+
       </Stack.Navigator>
     </NavigationContainer>
   );

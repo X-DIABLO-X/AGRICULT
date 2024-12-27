@@ -7,8 +7,7 @@ import ActiveOrder from "./ActiveOrder"
 import ChatList from "../ChatScreen/ChatList"
 import ProfilePage from "./ProfilePage"
 import PastOrder from "./PastOrder"
-
-
+import BidsList from './bidList';
 
 
 const BottomNavBar = () => {
@@ -22,7 +21,7 @@ const BottomNavBar = () => {
       case 'PastOrder':
         return <PastOrder />;
         case 'Chats':
-          return <ChatList />;
+          return <BidsList />;
         
       case 'Profile':
         return <ProfilePage />;

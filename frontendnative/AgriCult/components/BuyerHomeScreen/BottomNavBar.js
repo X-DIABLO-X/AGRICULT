@@ -9,7 +9,6 @@ import ProfilePage from "./ProfilePage"
 import PastOrder from "./PastOrder"
 import BidsList from './bidList';
 
-
 const BottomNavBar = () => {
   const [activePage, setActivePage] = useState('ActiveOrder');
   const navigation = useNavigation();
@@ -20,9 +19,8 @@ const BottomNavBar = () => {
         return <ActiveOrder />;
       case 'PastOrder':
         return <PastOrder />;
-        case 'Chats':
-          return <BidsList />;
-        
+      case 'Bids':
+        return <BidsList />;
       case 'Profile':
         return <ProfilePage />;
       default:
@@ -49,9 +47,9 @@ const BottomNavBar = () => {
           </TouchableOpacity>
         </View>
         
-        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Chats')}>
-          <Ionicons name="chatbubble-outline" size={24} color={activePage === 'Chats' ? 'blue' : 'black'} />
-          <Text style={[styles.navButtonText, activePage === 'Chats' && styles.activeText]}>Chats</Text>
+        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Bids')}>
+          <Ionicons name="cash-outline" size={24} color={activePage === 'Bids' ? 'blue' : 'black'} />
+          <Text style={[styles.navButtonText, activePage === 'Bids' && styles.activeText]}>Bids</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Profile')}>
           <Ionicons name="person-outline" size={24} color={activePage === 'Profile' ? 'blue' : 'black'} />

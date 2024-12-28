@@ -9,7 +9,7 @@ const BidsList = () => {
     { 
       id: '1', 
       name: 'Product #1', 
-      price: '$50', 
+      price: '50', 
       image: 'https://via.placeholder.com/100', 
       description: 'High-quality wireless earbuds with noise cancellation.',
       seller: 'TechCorp',
@@ -20,7 +20,7 @@ const BidsList = () => {
     { 
       id: '2', 
       name: 'Product #2', 
-      price: '$300', 
+      price: '300', 
       image: 'https://via.placeholder.com/100', 
       description: 'Latest smartphone with advanced camera features.',
       seller: 'MobileWorld',
@@ -31,7 +31,7 @@ const BidsList = () => {
     { 
       id: '3', 
       name: 'Product #3', 
-      price: '$1200', 
+      price: '1200', 
       image: 'https://via.placeholder.com/100', 
       description: 'Gaming laptop with high-end specs for seamless performance.',
       seller: 'GamingHub',
@@ -42,7 +42,7 @@ const BidsList = () => {
     { 
       id: '4', 
       name: 'Product #4', 
-      price: '$200', 
+      price: '200', 
       image: 'https://via.placeholder.com/100', 
       description: 'Smartwatch with health monitoring and fitness tracking.',
       seller: 'WearTech',
@@ -53,7 +53,7 @@ const BidsList = () => {
     { 
       id: '5', 
       name: 'Product #5', 
-      price: '$800', 
+      price: '800', 
       image: 'https://via.placeholder.com/100', 
       description: 'High-performance DSLR camera for professional photography.',
       seller: 'PhotoPro',
@@ -69,10 +69,8 @@ const BidsList = () => {
       onPress={() => navigation.navigate('BidDetailPage', { product: item })}
     >
       <Image source={{ uri: item.image }} style={styles.image} />
-      <View style={styles.infoContainer}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.price}>{item.price}</Text>
-      </View>
+      <Text style={styles.name}>{item.name}</Text>
+      <Text style={styles.price}>₹{item.price}</Text>
     </TouchableOpacity>
   );
 
@@ -82,23 +80,29 @@ const BidsList = () => {
         data={products}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
+        numColumns={2} // Display two items per row
+        columnWrapperStyle={styles.row} // Add spacing between rows
       />
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
     padding: 10,
   },
+  row: {
+    justifyContent: 'space-between', // Ensure even spacing between columns
+    marginBottom: 10,
+  },
   card: {
-    flexDirection: 'row',
+    flex: 1,
     backgroundColor: '#ffffff',
     borderRadius: 8,
     padding: 10,
-    marginBottom: 10,
+    margin: 5, // Add margin to avoid tight layout
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -106,24 +110,22 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   image: {
-    width: 100,
-    height: 100,
+    width: 120, // Increased image width
+    height: 120, // Increased image height
     borderRadius: 8,
-  },
-  infoContainer: {
-    flex: 1,
-    marginLeft: 10,
-    justifyContent: 'center',
+    marginBottom: 10,
   },
   name: {
-    fontSize: 18,
+    fontSize: 16, // Adjusted font size for the name
     fontWeight: 'bold',
     marginBottom: 5,
+    textAlign: 'center',
   },
   price: {
-    fontSize: 16,
+    fontSize: 14, // Adjusted font size for the price
     color: '#555',
   },
 });
+
 
 export default BidsList;

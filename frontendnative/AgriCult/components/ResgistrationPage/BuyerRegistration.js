@@ -12,6 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { BASE_URL } from '../const';
 
 const BuyerRegistration = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -49,7 +50,7 @@ const BuyerRegistration = ({ navigation }) => {
     };
 
     axios
-      .post('https://00z67rj6-3000.inc1.devtunnels.ms/new/buyer', userData)
+      .post(`${BASE_URL}/new/buyer`, userData)
       .then((response) => {
         console.log('Success:', response.data);
         Alert.alert('Success', 'Registration successful! Please check your email for verification.');

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, SafeAreaView, StatusBar, Alert, ActivityIndicator } from 'react-native';
 import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
+import { BASE_URL } from '../const';
 
 
 const greenTheme = {
@@ -34,7 +35,7 @@ const Login = ({ navigation }) => {
       setIsLoading(true);
       setError('');
       console.log('Login clicked with:', emailOrPhone, password);
-      const response = await fetch(`https://00z67rj6-3000.inc1.devtunnels.ms/user/login`, {
+      const response = await fetch(`${BASE_URL}/user/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

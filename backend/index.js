@@ -42,7 +42,9 @@ app.use((req, _res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
-
+app.get('/', (req, res) => {
+  res.send('Welcome to Backend!');
+});
 // Buyer Registration Endpoint
 app.post("/new/buyer", async (req, res) => {
   try {

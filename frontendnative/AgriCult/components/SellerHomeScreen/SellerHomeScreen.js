@@ -36,7 +36,7 @@ const App = ({ navigation }) => {
   const fetchOrders = async () => {
     try {
       const response = await fetch(
-        "https://00z67rj6-3000.inc1.devtunnels.ms/fetch/orders/"
+        "https://agricult.onrender.com/fetch/orders/"
       );
       const data = await response.json();
       if (data.success) {

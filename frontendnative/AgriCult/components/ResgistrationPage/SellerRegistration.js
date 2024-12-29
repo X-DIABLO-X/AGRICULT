@@ -76,7 +76,7 @@ const SellerRegistration = ({ navigation }) => {
     if (!validateForm()) return;
 
     try {
-      const response = await axios.post('https://00z67rj6-3000.inc1.devtunnels.ms/new/seller', {
+      const response = await axios.post('https://agricult.onrender.comnew/seller', {
         userName: formData.userName.trim(),
         license: formData.license,
         email: formData.email.trim(),

@@ -47,7 +47,7 @@ const ActiveOrdersScreen = () => {
       const userName = userData.userName;
 
       // Fetch orders from your API
-      const response = await fetch(`https://00z67rj6-3000.inc1.devtunnels.ms/fetch/orders?userName=${userName}&status=true`);
+      const response = await fetch(`https://agricult.onrender.com/fetch/orders?userName=${userName}&status=true`);
       const data = await response.json();
 
       if (!data.success) {

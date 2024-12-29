@@ -45,7 +45,7 @@ const InactiveOrdersScreen = () => {
       const userData = JSON.parse(userDataString);
       const userName = userData.userName;
 
-      const response = await fetch(`https://00z67rj6-3000.inc1.devtunnels.ms/fetch/orders?userName=${userName}&status=false`);
+      const response = await fetch(`https://agricult.onrender.com/fetch/orders?userName=${userName}&status=false`);
       const data = await response.json();
 
       if (!data.success) {

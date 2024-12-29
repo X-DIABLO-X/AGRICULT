@@ -86,7 +86,7 @@ const OrderScreen = ({navigation}) => {
     
     try {
       const response = await axios.post(
-        "https://00z67rj6-3000.inc1.devtunnels.ms/new/order/",
+        "https://agricult.onrender.com/new/order/",
         orderData
       );
       

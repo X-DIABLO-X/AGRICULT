@@ -49,7 +49,7 @@ const BuyerRegistration = ({ navigation }) => {
     };
 
     axios
-      .post('https://00z67rj6-3000.inc1.devtunnels.ms/new/buyer', userData)
+      .post('https://agricult.onrender.comnew/buyer', userData)
       .then((response) => {
         console.log('Success:', response.data);
         Alert.alert('Success', 'Registration successful! Please check your email for verification.');

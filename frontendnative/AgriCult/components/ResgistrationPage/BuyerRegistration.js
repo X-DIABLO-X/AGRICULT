@@ -12,6 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { BASE_URL } from '../const';
 
 const BuyerRegistration = ({ navigation }) => {
   const [username, setUsername] = useState('');

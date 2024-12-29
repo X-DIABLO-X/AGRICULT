@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, SafeAreaView, StatusBar, Alert, ActivityIndicator } from 'react-native';
 import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
+import { BASE_URL } from '../const';
 
 
 const greenTheme = {

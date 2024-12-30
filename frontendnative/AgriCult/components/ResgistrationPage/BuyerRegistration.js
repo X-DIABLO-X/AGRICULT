@@ -50,7 +50,7 @@ const BuyerRegistration = ({ navigation }) => {
     };
 
     axios
-      .post('https://agricult.onrender.comnew/buyer', userData)
+      .post('https://agricult.onrender.com/new/buyer', userData)
       .then((response) => {
         console.log('Success:', response.data);
         Alert.alert('Success', 'Registration successful! Please check your email for verification.');

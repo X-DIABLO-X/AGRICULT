@@ -39,7 +39,7 @@ const NewLogin = () => {
       setIsLoading(true);
       setError('');
       
-      const response = await fetch(`https://agricult.onrender.comuser/login`, {
+      const response = await fetch(`https://agricult.onrender.com/user/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -35,7 +35,7 @@ const Login = ({ navigation }) => {
       setIsLoading(true);
       setError('');
       console.log('Login clicked with:', emailOrPhone, password);
-      const response = await fetch(`https://agricult.onrender.comuser/login`, {
+      const response = await fetch(`https://agricult.onrender.com/user/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,26 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
 
 const OrderCard = ({ order }) => {
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
     });
   };
 
+  const navigation = useNavigation();
+  const quality = () => {
+    switch (order.quality) {
+      case 1:
+        return "Single Filter";
+      case 2:
+        return "Double Filter";
+      case 3:
+        return "Triple Filter";
+      default:
+        return "Unknown Quality";
+    }
+  };
+
   return (
-    <View style={styles.card}>
-      <Text style={styles.orderNo}>Order No: {order.id}</Text>
-      <View style={styles.orderDetails}>
-        <Text style={styles.orderText}>Quality: {order.quality}</Text>
-        <Text style={styles.orderText}>Quantity: {order.quantity}</Text>
-        <Text style={styles.orderText}>Region: {order.region}</Text>
-        <Text style={styles.orderText}>Loading Date: {formatDate(order.loadingDate)}</Text>
-        <Text style={styles.orderText}>Delivery Location: {order.deliveryLocation}</Text>
-        <Text style={styles.orderText}>Created: {formatDate(order.created_at)}</Text>
+    <View style={styles.newcard}>
+      <View style={styles.lleft1}>
+        <Text style={styles.cardheading}>
+          {order.quantity} Tons | {quality()}
+        </Text>
+        <View style={styles.locationContainer}>
+          <Ionicons name="location" size={20} color="#39665e" />
+          <Text style={styles.regionText}>{order.region}</Text>
+        </View>
+        <View style={styles.noofbids}>
+          <Text style={styles.noofbidstext}>{order.quotes} 5 Quotes Received</Text>
+        </View>
+      </View>
+
+      <View style={styles.right2}>
+        <View style={styles.right1}>
+          <Text style={styles.dateText}>Loading Date: </Text>
+          <Text style={styles.dateText}>{formatDate(order.loadingDate)}</Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("BidDetailPage", { product: order })
+          }
+        >
+          <View style={styles.checkquotes}>
+            <Text style={styles.checkquotesText}>Check All Quotes</Text>
+          </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -30,6 +73,8 @@ const ActiveOrdersScreen = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userName, setUserName] = useState("");
+  const navigation = useNavigation();
 
   useEffect(() => {
     fetchUserOrders();
@@ -37,27 +82,27 @@ const ActiveOrdersScreen = () => {
 
   const fetchUserOrders = async () => {
     try {
-      // Get user data from AsyncStorage
-      const userDataString = await AsyncStorage.getItem('user');
+      const userDataString = await AsyncStorage.getItem("user");
       if (!userDataString) {
-        throw new Error('User data not found');
+        throw new Error("User data not found");
       }
 
       const userData = JSON.parse(userDataString);
-      const userName = userData.userName;
+      setUserName(userData.userName);
 
-      // Fetch orders from your API
-      const response = await fetch(`https://agricult.onrender.com/fetch/orders?userName=${userName}&status=true`);
+      const response = await fetch(
+        `https://agricult.onrender.com/fetch/orders?userName=${userData.userName}&status=true`
+      );
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.message || 'Failed to fetch orders');
+        throw new Error(data.message || "Failed to fetch orders");
       }
 
       setOrders(data.orders);
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching orders:', err);
+      console.error("Error fetching orders:", err);
       setError(err.message);
       setLoading(false);
     }
@@ -80,57 +125,257 @@ const ActiveOrdersScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
-      {orders.length === 0 ? (
-        <View style={styles.centerContainer}>
-          <Text style={styles.noOrdersText}>No active orders found</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.left}>
+          <Image
+            source={require("../../assets/images.png")}
+            style={styles.image}
+          />
+          <Text style={styles.name}>Hello {userName}!</Text>
         </View>
-      ) : (
-        <FlatList
-          data={orders}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <OrderCard order={item} />}
-          contentContainerStyle={styles.listContent}
-          refreshing={loading}
-          onRefresh={fetchUserOrders}
-        />
-      )}
-    </View>
+        <View style={styles.right}>
+          <TouchableOpacity onPress={() => console.log("Notification pressed")}>
+            <Ionicons style={styles.usercog} name="notifications-outline" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => console.log("Settings pressed")}>
+            <Ionicons style={styles.usercog} name="settings-outline" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.neworder}>
+        <View style={styles.textneworder}>
+          <Text style={styles.neworderText}>Place New Order</Text>
+          <Text style={styles.neworderText1}>
+            Create RFQ for your requirements
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={styles.buttonneworder1}
+          onPress={() => navigation.navigate("PlaceOrder")}
+        >
+          <View style={styles.buttonneworder}>
+            <Ionicons style={styles.plus} name="add" size={32} color="white" />
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.RecentRFQ}>Recent RFQs</Text>
+      {orders.map((order) => (
+        <OrderCard key={order.id} order={order} />
+      ))}
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  // General Container Styles
+newcard: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center", // Center align vertically
+  padding: 16,
+  backgroundColor: "#F8FAF9", // Light background
+  borderRadius: 12,
+  marginBottom: 16,
+  borderWidth: 1,
+  borderColor: "#D9E2E1", // Subtle border color
+},
+
+// Left Section Styles
+lleft1: {
+  flex: 1,
+},
+
+cardheading: {
+  fontSize: 16, // Match font size from image
+  fontWeight: "600", // Slightly bold
+  color: "#2B3A37", // Neutral dark text
+  marginBottom: 4,
+},
+
+locationContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 4, // Match spacing
+},
+
+regionText: {
+  fontSize: 14, // Match text size
+  color: "#39665E", // Greenish color as in image
+  marginLeft: 6,
+},
+
+noofbids: {
+  marginTop: 8,
+  backgroundColor: "transparent", // No background
+  borderWidth: 1,
+  borderColor: "#39665E", // Border matches text color
+  borderRadius: 16,
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  alignSelf: "flex-start",
+},
+
+noofbidstext: {
+  fontSize: 12, // Match smaller text
+  color: "#39665E", // Match button text color
+  fontWeight: "500",
+},
+
+// Right Section Styles
+right2: {
+  justifyContent: "space-between",
+  alignItems: "flex-end",
+  flex: 0.5,
+},
+
+right1: {
+  marginBottom: 8,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  marginBottom: 4,
+},
+
+dateText: {
+  fontSize: 12,
+  color: "#2B3A37", // Dark neutral text color
+},
+
+// Button Styles
+checkquotes: {
+  gap: 8,
+  marginTop: 18,
+  width: 140,
+  height: 40,
+  backgroundColor: "#39665E", // Match button background color
+  borderRadius: 10,
+  paddingVertical: 8,
+  paddingHorizontal: 16,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+checkquotesText: {
+  fontSize: 14, // Match button text size
+  fontWeight: "500",
+  color: "#FFFFFF",
+  textAlign: "center",
+},
+
+ // General Container Styles
+
+
+
+
+  RecentRFQ: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  neworderText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "white",
+  },
+  neworderText1: {
+    fontSize: 14,
+    color: "white",
+  },
+  plus: {
+    fontweight: "bold",
+
+    fontSize: 32,
+    color: "#30534d",
+  },
+  neworder: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#30534d",
+    borderRadius: 8,
+    marginBottom: 16,
+    marginTop: 16,
+  },
+  buttonneworder: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fbd636",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+
+  header: {
+    flexDirection: "row", // Arrange horizontally
+    justifyContent: "space-between", // Space between left and right sections
+    alignItems: "center", // Center vertically
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: "white",
+  },
+  left: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  right: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  image: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginRight: 10,
+  },
+  usercog: {
+    fontSize: 24,
+    marginHorizontal: 5,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "white",
     paddingHorizontal: 16,
     paddingTop: 16,
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   listContent: {
     paddingBottom: 16,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     padding: 16,
     marginVertical: 8,
     borderRadius: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 4,
     borderLeftWidth: 5,
-    borderLeftColor: '#4caf50',
+    borderLeftColor: "#4caf50",
   },
   orderNo: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#4caf50',
+    fontWeight: "bold",
+    color: "#4caf50",
     marginBottom: 8,
   },
   orderDetails: {
@@ -138,18 +383,18 @@ const styles = StyleSheet.create({
   },
   orderText: {
     fontSize: 16,
-    color: '#555',
+    color: "#555",
     marginBottom: 4,
   },
   errorText: {
-    color: 'red',
+    color: "red",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   noOrdersText: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
 });
 

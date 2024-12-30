@@ -1,165 +1,214 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ImageBackground,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ProfilePage = () => {
+const Header = ({ userData }) => (
+  <ImageBackground
+    source={require("./circles.png")}
+    style={styles.headerBackground}
+    resizeMode="cover"
+  >
+    <View style={styles.header}>
+      <View style={styles.circle}>
+        <Image
+          style={styles.profileImage}
+          source={{
+            uri: userData.profileImage || "https://via.placeholder.com/100",
+          }}
+        />
+      </View>
+      <Text style={styles.name}>{userData.fullName}</Text>
+      <Text style={styles.businessName}>{userData.businessName}</Text>
+    </View>
+  </ImageBackground>
+);
+
+const DetailRow = ({ label, value }) => (
+  <View style={styles.detailRow}>
+    <Text style={styles.label}>{label}:</Text>
+    <Text style={styles.value}>{value}</Text>
+  </View>
+);
+
+export default function ProfileScreen() {
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getUserData();
+    fetchUserData();
   }, []);
 
-  const getUserData = async () => {
+  const fetchUserData = async () => {
     try {
-      const jsonValue = await AsyncStorage.getItem('user');
-      if (jsonValue != null) {
+      const jsonValue = await AsyncStorage.getItem("user");
+      if (jsonValue) {
         const user = JSON.parse(jsonValue);
         setUserData(user);
+      } else {
+        Alert.alert("No user data found");
       }
     } catch (error) {
-      console.error('Error retrieving user data:', error);
+      console.error("Error retrieving user data:", error);
+      Alert.alert("Error", "Failed to load user data. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!userData) {
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color="#1E7C57" />
+        <Text style={styles.loadingText}>Loading your profile...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>        
-        <Image 
-          style={styles.backgroundImage}
-          source={{ uri: 'https://media.istockphoto.com/id/1280856062/photo/variety-of-fresh-organic-vegetables-and-fruits-in-the-garden.jpg?s=612x612&w=0&k=20&c=KoF5Ue-g3wO3vXPgLw9e2Qzf498Yow7WGXMSCNz7O60=' }}
-        />
-        <View style={styles.profileContainer}>
-        <Image 
-  style={styles.profileImage}
-  source={{ 
-    uri: userData.pic || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
-      }}
-    />
-          <Text style={styles.name}>{userData.fullName}</Text>
-          <Text style={styles.businessName}>{userData.businessName}</Text>
-          <Text style={styles.location}>Location: {userData.location}</Text>
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
-        </View>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      {userData && <Header userData={userData} />}
+      <View style={styles.boxContainer}>
+        {[
+          { label: "Full Name", value: userData.fullName },
+          { label: "Username", value: userData.userName },
+          { label: "Phone Number", value: userData.phoneNumber },
+          { label: "Email", value: userData.email },
+          { label: "Business Name", value: userData.businessName },
+          { label: "Location", value: userData.location },
+          {
+            label: "Member Since",
+            value: new Date(userData.created_at).toLocaleDateString(),
+          },
+        ].map((item, index) => (
+          <DetailRow key={index} label={item.label} value={item.value} />
+        ))}
       </View>
-      <View style={styles.section}>        
-        <Text style={styles.sectionTitle}>Profile Information</Text>
-        
-        <Text style={styles.infoLabel}>Full Name:</Text>
-        <Text style={styles.infoValue}>{userData.fullName}</Text>
-
-        <Text style={styles.infoLabel}>Username:</Text>
-        <Text style={styles.infoValue}>{userData.userName}</Text>
-
-        <Text style={styles.infoLabel}>Phone Number:</Text>
-        <Text style={styles.infoValue}>{userData.phoneNumber}</Text>
-
-        <Text style={styles.infoLabel}>Email:</Text>
-        <Text style={styles.infoValue}>{userData.email}</Text>
-
-        <Text style={styles.infoLabel}>Business Name:</Text>
-        <Text style={styles.infoValue}>{userData.businessName}</Text>
-
-        <Text style={styles.infoLabel}>Location:</Text>
-        <Text style={styles.infoValue}>{userData.location}</Text>
-
-        <Text style={styles.infoLabel}>Member Since:</Text>
-        <Text style={styles.infoValue}>
-          {new Date(userData.created_at).toLocaleDateString()}
-        </Text>
-      </View>
+      <TouchableOpacity
+        style={styles.editProfileButton}
+        onPress={() => console.log("Edit Profile")}
+        accessibilityLabel="Edit your profile"
+      >
+        <Text style={styles.editProfileText}>Edit Profile</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e8f5e9',
+    backgroundColor: "#f8f9fa",
+  },
+  contentContainer: {
+    alignItems: "center",
+    paddingBottom: 30,
+  },
+  headerBackground: {
+    width: "100%",
+    height: 260,
+  },
+  header: {
+    height: 260,
+    backgroundColor: "#1E7C57",
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  circle: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  name: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  businessName: {
+    fontSize: 16,
+    color: "#fff",
+  },
+  boxContainer: {
+    width: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+    marginTop: -40,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  value: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "right",
+  },
+  editProfileButton: {
+    backgroundColor: "#1E7C57",
+    paddingVertical: 15,
+    paddingHorizontal: 60,
+    borderRadius: 30,
+    marginTop: 25,
+    shadowColor: "#1E7C57",
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  editProfileText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e8f5e9',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8f9fa",
   },
-  header: {
-    marginBottom: 20,
-  },
-  backgroundImage: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'cover',
-    backgroundColor: '#81c784',
-  },
-  profileContainer: {
-    alignItems: 'center',
-    marginTop: -75,
-  },
-  profileImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderWidth: 4,
-    borderColor: '#c8e6c9',
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  loadingText: {
     marginTop: 10,
-    color: '#2e7d32',
-  },
-  businessName: {
-    fontSize: 18,
-    color: '#4caf50',
-    marginBottom: 5,
-  },
-  location: {
     fontSize: 16,
-    color: '#66bb6a',
-    marginBottom: 15,
-  },
-  editButton: {
-    backgroundColor: '#388e3c',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  editButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  section: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#1b5e20',
-  },
-  infoLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
-    color: '#2e7d32',
-  },
-  infoValue: {
-    fontSize: 16,
-    color: '#4caf50',
-    marginBottom: 5,
+    color: "#666",
   },
 });
-
-export default ProfilePage;

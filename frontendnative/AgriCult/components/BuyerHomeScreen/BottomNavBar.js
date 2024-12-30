@@ -41,11 +41,11 @@ const BottomNavBar = () => {
           <Text style={[styles.navButtonText, activePage === 'PastOrder' && styles.activeText]}>Past Order</Text>
         </TouchableOpacity>
         
-        <View style={styles.navButtonCenter}>
+        {/* <View style={styles.navButtonCenter}>
           <TouchableOpacity style={styles.centerButton} onPress={() => navigation.navigate('PlaceOrder')}>
             <Ionicons name="add" size={32} color="white" />
           </TouchableOpacity>
-        </View>
+        </View> */}
         
         <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Bids')}>
           <Ionicons name="cash-outline" size={24} color={activePage === 'Bids' ? 'blue' : 'black'} />

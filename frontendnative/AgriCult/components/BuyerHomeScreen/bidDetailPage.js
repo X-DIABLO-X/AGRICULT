@@ -190,11 +190,11 @@ const CollectionCenter = ({ route, navigation }) => {
       </View>
       
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Accept')}>
           <Text style={styles.actionButtonText}>Accept</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText}>Counter</Text>
+          <Text style={styles.actionButtonText} onPress={() => console.log('Counter')}>Counter</Text>
         </TouchableOpacity>
       </View>
     </View>

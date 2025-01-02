@@ -66,7 +66,22 @@ const OrderScreen = ({ navigation }) => {
 
     getUserData();
   }, []);
+  
+  // Utility Functions
+  const convertToIST = (date) => {
+    const utcDate = new Date(date);
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+    return new Date(utcDate.getTime() + istOffset);
+  };
 
+  const formatDateToIST = (date) => {
+    const istDate = convertToIST(date);
+    return istDate.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
   const quantities = ["12", "18", "25", "30"];
   const qualitys = {"Single Filter":0, "Double Filter":1, "Mixed Filter":2};
   const regions = [
@@ -203,7 +218,7 @@ const OrderScreen = ({ navigation }) => {
           onPress={() => setShowDatePicker(true)}
         >
           <Text style={styles.dateButtonText}>
-            {loadingDate.toLocaleDateString()}
+            {formatDateToIST(loadingDate)}
           </Text>
           <Ionicons name="calendar-outline" size={24} color="#30534d" />
         </TouchableOpacity>
@@ -213,10 +228,14 @@ const OrderScreen = ({ navigation }) => {
             mode="date"
             onChange={(_event, date) => {
               setShowDatePicker(false);
-              if (date) setLoadingDate(date);
+              if (date) {
+                const istDate = convertToIST(date);
+                setLoadingDate(istDate);
+              }
             }}
           />
         )}
+
         <View style={styles.buttonsubmit}>
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
             <Text style={styles.submitButtonText}>Submit</Text>

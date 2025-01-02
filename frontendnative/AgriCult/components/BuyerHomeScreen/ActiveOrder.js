@@ -7,10 +7,12 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import OrderScreen from "./OrderScreen";
 
 const OrderCard = ({ order }) => {
   const formatDate = (dateString) => {
@@ -45,16 +47,14 @@ const OrderCard = ({ order }) => {
           <Text style={styles.regionText}>{order.region}</Text>
         </View>
         <View style={styles.noofbids}>
-          <Text style={styles.noofbidstext}>{order.quotes} 5 Quotes Received</Text>
+          <Text style={styles.noofbidstext}>{order.quotes} Quotes Received</Text>
         </View>
       </View>
-
       <View style={styles.right2}>
         <View style={styles.right1}>
-          <Text style={styles.dateText}>Loading Date: </Text>
+          <Text style={styles.dateText}>Loading Date:</Text>
           <Text style={styles.dateText}>{formatDate(order.loadingDate)}</Text>
         </View>
-
         <TouchableOpacity
           onPress={() =>
             navigation.navigate("BidDetailPage", { product: order })
@@ -70,6 +70,7 @@ const OrderCard = ({ order }) => {
 };
 
 const ActiveOrdersScreen = () => {
+  const [modalVisible, setModalVisible] = useState(false);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -125,7 +126,11 @@ const ActiveOrdersScreen = () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContainer}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={styles.header}>
         <View style={styles.left}>
           <Image
@@ -143,7 +148,6 @@ const ActiveOrdersScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-
       <View style={styles.neworder}>
         <View style={styles.textneworder}>
           <Text style={styles.neworderText}>Place New Order</Text>
@@ -153,25 +157,76 @@ const ActiveOrdersScreen = () => {
         </View>
         <TouchableOpacity
           style={styles.buttonneworder1}
-          onPress={() => navigation.navigate("PlaceOrder")}
+          onPress={() => setModalVisible(true)}
         >
           <View style={styles.buttonneworder}>
             <Ionicons style={styles.plus} name="add" size={32} color="white" />
           </View>
         </TouchableOpacity>
       </View>
-
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <OrderScreen  navigation={{
+                  goBack: () => setModalVisible(false),
+                  navigate: (screen) => {
+                    setModalVisible(false);
+                    navigation.navigate(screen);
+                  }
+                }} />
+          </View>
+        </View>
+      </Modal>
       <Text style={styles.RecentRFQ}>Recent RFQs</Text>
       {orders.map((order) => (
         <OrderCard key={order.id} order={order} />
       ))}
     </ScrollView>
+    </View>
   );
 };
 
+
+
 const styles = StyleSheet.create({
+   scrollContainer: {
+   
+    paddingBottom: 20,
+  },
+  modalBackground: {
+    margin: 10,
+    zIndex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  abcd: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    margin:0,
+    padding: 0,
+    width: "90%",
+    height: "80%",
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
   // General Container Styles
 newcard: {
+
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center", // Center align vertically
@@ -291,6 +346,8 @@ checkquotesText: {
     color: "#30534d",
   },
   neworder: {
+    width: "100%",
+    height: 80,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -313,12 +370,14 @@ checkquotesText: {
   },
 
   header: {
+    marginTop: 30,
     flexDirection: "row", // Arrange horizontally
     justifyContent: "space-between", // Space between left and right sections
     alignItems: "center", // Center vertically
     paddingHorizontal: 16,
     paddingVertical: 8,
     backgroundColor: "white",
+    borderRadius: 8,
   },
   left: {
     flexDirection: "row",

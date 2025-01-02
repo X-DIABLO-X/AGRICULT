@@ -80,7 +80,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="NewLogin">
+      <Stack.Navigator initialRouteName="NewLogin" mode="modal" screenOptions={{ headerShown: false }}>
         {/* User Type Selection Screen */}
         <Stack.Screen 
           name="NewLogin" 
@@ -89,6 +89,7 @@ export default function App() {
         />
         <Stack.Screen name="ChatList" component={ChatList} />
         <Stack.Screen name="PastBidsScreen" component={PastBidsScreen} />
+      
         
         <Stack.Screen
           name="UserTypeSelection"

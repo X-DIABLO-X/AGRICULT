@@ -5,10 +5,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-
 const SUPABASE_URL = 'https://pojuqqnftsunpiutlyrn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvanVxcW5mdHN1bnBpdXRseXJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2ODAwOTIsImV4cCI6MjA1MDI1NjA5Mn0.0QASIiNcOib_pClL7XMi45_MoK3cMNjLbmvfhp982UQ';
-
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.error("Missing required environment variables");
@@ -42,9 +40,11 @@ app.use((req, _res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
+
 app.get('/', (req, res) => {
   res.send('Welcome to Backend!');
 });
+
 // Buyer Registration Endpoint
 app.post("/new/buyer", async (req, res) => {
   try {
@@ -94,7 +94,7 @@ app.post("/new/buyer", async (req, res) => {
         data: {
           user_type: "buyer"
         }
-    }
+      }
     });
 
     if (authError) {
@@ -385,50 +385,92 @@ app.post("/new/order", async (req, res) => {
 app.get("/fetch/orders", async (req, res) => {
   try {
     const { userName, status } = req.query;
-    
+
     let query = supabase
-      .from('ORDERS')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("ORDERS")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (userName) {
-      query = query.eq('userName', userName);
+      query = query.eq("userName", userName);
     }
 
-    if (status) {
-      query = query.eq('status', status);
+    if (status !== undefined) {
+      const statusBoolean = status === "true";
+      query = query.eq("status", statusBoolean);
     }
 
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error fetching orders:', error);
+      console.error("Error fetching orders:", error);
       return res.status(500).json({
         success: false,
-        message: 'Failed to fetch orders',
+        message: "Failed to fetch orders",
+        error: error.message,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      orders: data,
+    });
+  } catch (error) {
+    console.error("Fetch orders error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching orders",
+      error: error.message,
+    });
+  }
+});
+
+// Fetch Bids Endpoint
+app.get("/fetch/bids", async (req, res) => {
+  try {
+    const { orderID } = req.query;
+
+    if (!orderID) {
+      return res.status(400).json({
+        success: false,
+        message: "Order ID is required"
+      });
+    }
+
+    const { data, error } = await supabase
+      .from('BIDS')
+      .select('*')
+      .eq('orderID', orderID)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching bids:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch bids',
         error: error.message
       });
     }
 
     return res.status(200).json({
       success: true,
-      orders: data
+      bids: data
     });
 
   } catch (error) {
-    console.error('Fetch orders error:', error);
+    console.error('Fetch bids error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Server error while fetching orders',
+      message: 'Server error while fetching bids',
       error: error.message
     });
   }
 });
 
 // Update Order Status Endpoint
-app.put("/order/:orderId/status", async (req, res) => {
+app.put("/order/:orderID/status", async (req, res) => {
   try {
-    const { orderId } = req.params;
+    const { orderID } = req.params;
     const { status } = req.body;
 
     if (!status) {
@@ -441,7 +483,7 @@ app.put("/order/:orderId/status", async (req, res) => {
     const { error } = await supabase
       .from('ORDERS')
       .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', orderId);
+      .eq('id', orderID);
 
     if (error) {
       return res.status(500).json({

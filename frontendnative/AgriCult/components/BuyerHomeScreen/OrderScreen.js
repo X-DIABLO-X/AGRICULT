@@ -39,7 +39,7 @@ const RadioButton = ({ options, onSelect }) => {
 
 const OrderScreen = ({ navigation }) => {
   const [quantity, setQuantity] = useState();
-  const [qualityType, setQualityType] = useState();
+  const [quality, setquality] = useState();
   const [region, setRegion] = useState("");
   const [loadingDate, setLoadingDate] = useState(new Date());
   const [deliveryLocation, setDeliveryLocation] = useState("madhur");
@@ -68,7 +68,7 @@ const OrderScreen = ({ navigation }) => {
   }, []);
 
   const quantities = ["12", "18", "25", "30"];
-  const qualityTypes = ["Single Filter", "Double Filter", "Mixed Filter"];
+  const qualitys = {"Single Filter":0, "Double Filter":1, "Mixed Filter":2};
   const regions = [
     "Madhur",
 
@@ -93,17 +93,15 @@ const OrderScreen = ({ navigation }) => {
     // Submit order to backend with user data
     const orderData = {
       quantity,
-      qualityType,
+      quality,
       region,
       loadingDate: loadingDate.toISOString(),
-      userId: userData.id,
       userName: userData.userName,
-      businessName: userData.businessName,
-      email: userData.email,
-      phoneNumber: userData.phoneNumber,
+      deliveryLocation: userData.location
     };
 
     try {
+      console.log(orderData);
       const response = await axios.post(
         "https://agricult.onrender.com/new/order/",
         orderData
@@ -166,20 +164,20 @@ const OrderScreen = ({ navigation }) => {
         </View>
         <Text style={styles.TonsText}>Select Grade </Text>
         <View style={styles.Tonscontainer}>
-          <View style={styles.radioContainer}>
-            {qualityTypes.map((q) => (
-              <TouchableOpacity
-                key={q}
-                style={[
-                  styles.radioButton,
-                  qualityType === q && styles.selectedRadioButton,
-                ]}
-                onPress={() => setQualityType(q)}
-              >
-                <Text style={styles.radioText}>{q}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        <View style={styles.radioContainer}>
+          {Object.keys(qualitys).map((q) => (
+            <TouchableOpacity
+              key={q}
+              style={[
+                styles.radioButton,
+                quality === qualitys[q] && styles.selectedRadioButton,
+              ]}
+              onPress={() => setquality(qualitys[q])} // Map quality to its assigned integer
+            >
+              <Text style={styles.radioText}>{q}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
         </View>
         <Text style={styles.TonsText}> Region Required</Text>
         <View style={styles.Tonscontainer}>

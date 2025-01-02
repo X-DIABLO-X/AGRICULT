@@ -342,7 +342,7 @@ app.post("/new/order", async (req, res) => {
         message: "All fields are required",
       });
     }
-
+    console.log(req.body);
     const { data, error } = await supabase
       .from("ORDERS")
       .insert([

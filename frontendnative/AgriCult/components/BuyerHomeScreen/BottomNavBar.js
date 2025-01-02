@@ -36,25 +36,25 @@ const BottomNavBar = () => {
           <Ionicons name="list-outline" size={24} color={activePage === 'ActiveOrder' ? 'blue' : 'black'} />
           <Text style={[styles.navButtonText, activePage === 'ActiveOrder' && styles.activeText]}>Active Order</Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('PastOrder')}>
+        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('PastOrder')}>
           <Ionicons name="time-outline" size={24} color={activePage === 'PastOrder' ? 'blue' : 'black'} />
           <Text style={[styles.navButtonText, activePage === 'PastOrder' && styles.activeText]}>Past Order</Text>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
         
-        {/* <View style={styles.navButtonCenter}>
+        <View style={styles.navButtonCenter}>
           <TouchableOpacity style={styles.centerButton} onPress={() => navigation.navigate('PlaceOrder')}>
             <Ionicons name="add" size={32} color="white" />
           </TouchableOpacity>
-        </View> */}
+        </View>
         
-        {/* <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Bids')}>
+        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Bids')}>
           <Ionicons name="cash-outline" size={24} color={activePage === 'Bids' ? 'blue' : 'black'} />
           <Text style={[styles.navButtonText, activePage === 'Bids' && styles.activeText]}>Bids</Text>
-        </TouchableOpacity> */}
-        {/* <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Profile')}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Profile')}>
           <Ionicons name="person-outline" size={24} color={activePage === 'Profile' ? 'blue' : 'black'} />
           <Text style={[styles.navButtonText, activePage === 'Profile' && styles.activeText]}>Profile</Text>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
     </View>
   );

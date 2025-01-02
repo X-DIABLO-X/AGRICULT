@@ -329,14 +329,14 @@ app.post("/new/order", async (req, res) => {
   try {
     const {
       quantity,
-      qualityType,
+      quality,
       region,
       loadingDate,
       deliveryLocation,
       userName,
     } = req.body;
 
-    if (!quantity || !qualityType || !region || !loadingDate || !deliveryLocation || !userName) {
+    if (!quantity || !quality || !region || !loadingDate || !deliveryLocation || !userName) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -348,7 +348,7 @@ app.post("/new/order", async (req, res) => {
       .insert([
         {
           quantity,
-          quality: qualityType,
+          quality,
           region,
           loadingDate,
           deliveryLocation,
@@ -519,7 +519,7 @@ app.use((err, _req, res, _next) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 1010;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

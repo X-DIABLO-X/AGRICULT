@@ -385,42 +385,42 @@ app.post("/new/order", async (req, res) => {
 app.get("/fetch/orders", async (req, res) => {
   try {
     const { userName, status } = req.query;
-    
+
     let query = supabase
-      .from('ORDERS')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("ORDERS")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (userName) {
-      query = query.eq('userName', userName);
+      query = query.eq("userName", userName);
     }
 
-    if (status) {
-      query = query.eq('status', status);
+    if (status !== undefined) {
+      const statusBoolean = status === "true";
+      query = query.eq("status", statusBoolean);
     }
 
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error fetching orders:', error);
+      console.error("Error fetching orders:", error);
       return res.status(500).json({
         success: false,
-        message: 'Failed to fetch orders',
-        error: error.message
+        message: "Failed to fetch orders",
+        error: error.message,
       });
     }
 
     return res.status(200).json({
       success: true,
-      orders: data
+      orders: data,
     });
-
   } catch (error) {
-    console.error('Fetch orders error:', error);
+    console.error("Fetch orders error:", error);
     return res.status(500).json({
       success: false,
-      message: 'Server error while fetching orders',
-      error: error.message
+      message: "Server error while fetching orders",
+      error: error.message,
     });
   }
 });

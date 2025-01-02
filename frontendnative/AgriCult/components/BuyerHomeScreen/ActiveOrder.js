@@ -7,6 +7,7 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
+  RefreshControl, // Added RefreshControl import
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -74,11 +75,8 @@ const ActiveOrdersScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userName, setUserName] = useState("");
+  const [refreshing, setRefreshing] = useState(false); // Added refreshing state
   const navigation = useNavigation();
-
-  useEffect(() => {
-    fetchUserOrders();
-  }, []);
 
   const fetchUserOrders = async () => {
     try {
@@ -108,6 +106,16 @@ const ActiveOrdersScreen = () => {
     }
   };
 
+  // Added onRefresh function
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchUserOrders().finally(() => setRefreshing(false));
+  }, []);
+
+  useEffect(() => {
+    fetchUserOrders();
+  }, []);
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
@@ -125,7 +133,17 @@ const ActiveOrdersScreen = () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView 
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#4caf50"]} // Android
+          tintColor="#4caf50" // iOS
+        />
+      }
+    >
       <View style={styles.header}>
         <View style={styles.left}>
           <Image
@@ -171,104 +189,96 @@ const ActiveOrdersScreen = () => {
 
 const styles = StyleSheet.create({
   // General Container Styles
-newcard: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center", // Center align vertically
-  padding: 16,
-  backgroundColor: "#F8FAF9", // Light background
-  borderRadius: 12,
-  marginBottom: 16,
-  borderWidth: 1,
-  borderColor: "#D9E2E1", // Subtle border color
-},
+  newcard: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#F8FAF9",
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#D9E2E1",
+  },
 
-// Left Section Styles
-lleft1: {
-  flex: 1,
-},
+  lleft1: {
+    flex: 1,
+  },
 
-cardheading: {
-  fontSize: 16, // Match font size from image
-  fontWeight: "600", // Slightly bold
-  color: "#2B3A37", // Neutral dark text
-  marginBottom: 4,
-},
+  cardheading: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2B3A37",
+    marginBottom: 4,
+  },
 
-locationContainer: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 4, // Match spacing
-},
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
 
-regionText: {
-  fontSize: 14, // Match text size
-  color: "#39665E", // Greenish color as in image
-  marginLeft: 6,
-},
+  regionText: {
+    fontSize: 14,
+    color: "#39665E",
+    marginLeft: 6,
+  },
 
-noofbids: {
-  marginTop: 8,
-  backgroundColor: "transparent", // No background
-  borderWidth: 1,
-  borderColor: "#39665E", // Border matches text color
-  borderRadius: 16,
-  paddingHorizontal: 10,
-  paddingVertical: 4,
-  alignSelf: "flex-start",
-},
+  noofbids: {
+    marginTop: 8,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#39665E",
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    alignSelf: "flex-start",
+  },
 
-noofbidstext: {
-  fontSize: 12, // Match smaller text
-  color: "#39665E", // Match button text color
-  fontWeight: "500",
-},
+  noofbidstext: {
+    fontSize: 12,
+    color: "#39665E",
+    fontWeight: "500",
+  },
 
-// Right Section Styles
-right2: {
-  justifyContent: "space-between",
-  alignItems: "flex-end",
-  flex: 0.5,
-},
+  right2: {
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    flex: 0.5,
+  },
 
-right1: {
-  marginBottom: 8,
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "flex-end",
-  marginBottom: 4,
-},
+  right1: {
+    marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginBottom: 4,
+  },
 
-dateText: {
-  fontSize: 12,
-  color: "#2B3A37", // Dark neutral text color
-},
+  dateText: {
+    fontSize: 12,
+    color: "#2B3A37",
+  },
 
-// Button Styles
-checkquotes: {
-  gap: 8,
-  marginTop: 18,
-  width: 140,
-  height: 40,
-  backgroundColor: "#39665E", // Match button background color
-  borderRadius: 10,
-  paddingVertical: 8,
-  paddingHorizontal: 16,
-  alignItems: "center",
-  justifyContent: "center",
-},
+  checkquotes: {
+    gap: 8,
+    marginTop: 18,
+    width: 140,
+    height: 40,
+    backgroundColor: "#39665E",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-checkquotesText: {
-  fontSize: 14, // Match button text size
-  fontWeight: "500",
-  color: "#FFFFFF",
-  textAlign: "center",
-},
-
- // General Container Styles
-
-
-
+  checkquotesText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#FFFFFF",
+    textAlign: "center",
+  },
 
   RecentRFQ: {
     fontSize: 18,
@@ -286,7 +296,6 @@ checkquotesText: {
   },
   plus: {
     fontweight: "bold",
-
     fontSize: 32,
     color: "#30534d",
   },
@@ -313,9 +322,9 @@ checkquotesText: {
   },
 
   header: {
-    flexDirection: "row", // Arrange horizontally
-    justifyContent: "space-between", // Space between left and right sections
-    alignItems: "center", // Center vertically
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 8,
     backgroundColor: "white",

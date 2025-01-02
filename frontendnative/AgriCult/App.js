@@ -159,8 +159,8 @@ export default function App() {
           options={{ title: "Order Details" }}
         />
       <Stack.Screen name = "Chat" component={Chat}/>
+      <Stack.Screen name="BidDetailPage" component={BidDetailPage} options={{ title: "Collection Center" }}/>
       
-      <Stack.Screen name="BidDetailPage" component={BidDetailPage} options={{ title: "Bid Details" }}/>
 
       </Stack.Navigator>
     </NavigationContainer>

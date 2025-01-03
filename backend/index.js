@@ -645,3 +645,48 @@ app.post("/new/chat", async (req, res) => {
     });
   }
 });
+
+
+app.post("/new/bid", async (req, res) => {
+  try {
+    const { orderID, userName, amount, pic, license } = req.body;
+
+    if (!orderID || !userName || !amount || !pic, !license) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("BIDS")
+      .insert([{
+        orderID,
+        userName,
+        amount,
+        pic,
+        license
+      }])
+      .select();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to place bid",
+        error: error.message
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Bid placed successfully",
+      bid: data[0]
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error while placing bid",
+      error: error.message
+    });
+  }
+});

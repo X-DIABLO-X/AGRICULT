@@ -52,7 +52,7 @@ const QuoteSuccessModal = ({ visible, onClose }) => {
 
 const App = ({ navigation }) => {
   const [orders, setOrders] = useState([]);
-  const [userRegion, setUserRegion] = useState("Karepta");
+  const [userRegion, setUserRegion] = useState(null);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
@@ -60,29 +60,43 @@ const App = ({ navigation }) => {
   const [currentBid, setCurrentBid] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [images, setImages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   const [userData, setUserData] = useState(null);
   useEffect(() => {
     const getUserData = async () => {
       try {
-        const storedUser = await AsyncStorage.getItem("user");
+        const storedUser = await AsyncStorage.getItem('user');
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
-          console.log("data: ", parsedUser);
           setUserData(parsedUser);
+          if (parsedUser.region) {
+            setUserRegion(parsedUser.region);
+          } else {
+            console.warn("No region found in stored user data");
+            // Set a default region only if none exists in stored data
+            setUserRegion("Karepta");
+          }
         } else {
-          console.error("No user data found in AsyncStorage.");
+          console.warn("No user data found in AsyncStorage");
+          // Handle the case when no user data exists
+          setUserRegion("Karepta"); // Set default only when no stored data exists
         }
       } catch (error) {
         console.error("Error retrieving user data:", error);
+        // Handle error state appropriately
+        setUserRegion("Karepta"); // Fallback to default in case of error
+      } finally {
+        setIsLoading(false);
       }
     };
 
     getUserData();
   }, []);
   console.log(userData);
+  console.log(userRegion);
   // Fetch orders from API
   useEffect(() => {
     fetchOrders();
@@ -100,6 +114,7 @@ const App = ({ navigation }) => {
     }
   };
   const fetchOrders = async () => {
+    setIsOrdersLoading(true);
     try {
       const response = await fetch(
         "https://agricult.onrender.com/fetch/orders/"
@@ -124,6 +139,8 @@ const App = ({ navigation }) => {
     } catch (error) {
       console.error("Error fetching orders:", error);
       alert("An error occurred while fetching orders.");
+    } finally {
+      setIsOrdersLoading(false);
     }
   };
 
@@ -245,7 +262,13 @@ const App = ({ navigation }) => {
     "Polyachi",
     "Madhur",
   ];
-
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#30534d" />
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -254,7 +277,7 @@ const App = ({ navigation }) => {
             source={require("../../assets/images.png")}
             style={styles.image}
           />
-          <Text style={styles.name}>Hello DIABLO!</Text>
+          <Text style={styles.name}>Hello {userData.userName}!</Text>
         </View>
         <View style={styles.right}>
           <TouchableOpacity onPress={() => setProfileModalVisible(true)}>
@@ -324,8 +347,15 @@ const App = ({ navigation }) => {
 
       <View style={styles.content}>
         <Text style={styles.title}>My Buyers</Text>
-        {filteredOrders.length === 0 ? (
-          <Text>No orders available in your region.</Text>
+        {isOrdersLoading ? (
+          <View style={styles.ordersLoadingContainer}>
+            <ActivityIndicator size="large" color="#30534d" />
+            <Text style={styles.loadingText}>Loading orders...</Text>
+          </View>
+        ) : filteredOrders.length === 0 ? (
+          <View style={styles.noOrdersContainer}>
+            <Text style={styles.noOrdersText}>No orders available in your region.</Text>
+          </View>
         ) : (
           <FlatList
             data={filteredOrders}
@@ -390,7 +420,6 @@ const App = ({ navigation }) => {
                     </View>
                   </View>
                 </View>
-                ;
               </>
             )}
             showsVerticalScrollIndicator={false}
@@ -920,14 +949,17 @@ const styles = StyleSheet.create({
     color: "#1E7C57",
   },
   regionBox: {
+    alignSelf: 'flex-start',
+    minWidth: 120,  // Minimum width
+    maxWidth: 'auto',  // Allow expansion
     borderWidth: 2,
-    width: 120,
     borderColor: "#30534d",
     backgroundColor: "#e9f5f3",
     borderRadius: 50,
     padding: 5,
     marginTop: 5,
-  },
+    paddingHorizontal: 10,
+},
   regionLabel: {
     fontSize: 14,
     color: "#1E7C57",
@@ -1320,6 +1352,38 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 14,
     marginBottom: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#efefec',
+  },
+  
+  ordersLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#30534d',
+  },
+  
+  noOrdersContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  
+  noOrdersText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
 });
 

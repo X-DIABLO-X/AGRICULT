@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { launchImageLibrary } from "react-native-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -62,7 +63,26 @@ const App = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  
+  const [userData, setUserData] = useState(null);
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem("user");
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          console.log("data: ", parsedUser);
+          setUserData(parsedUser);
+        } else {
+          console.error("No user data found in AsyncStorage.");
+        }
+      } catch (error) {
+        console.error("Error retrieving user data:", error);
+      }
+    };
+
+    getUserData();
+  }, []);
+  console.log(userData);
   // Fetch orders from API
   useEffect(() => {
     fetchOrders();
@@ -234,7 +254,7 @@ const App = ({ navigation }) => {
             source={require("../../assets/images.png")}
             style={styles.image}
           />
-          <Text style={styles.name}>Hello Sneha!</Text>
+          <Text style={styles.name}>Hello DIABLO!</Text>
         </View>
         <View style={styles.right}>
           <TouchableOpacity onPress={() => setProfileModalVisible(true)}>

@@ -607,7 +607,7 @@ app.post("/new/chat", async (req, res) => {
   try {
     const { senderUserName, receiverUserName, message, audioChat, type } = req.body;
 
-    if (!senderUserName || !receiverUserName || !message || !type) {
+    if (!senderUserName || !receiverUserName || !message || type=== undefined) {
       return res.status(400).json({
         success: false,
         message: "Required fields missing"
@@ -620,7 +620,6 @@ app.post("/new/chat", async (req, res) => {
         senderUserName,
         receiverUserName,
         message,
-        audioChat,
         type
       }])
       .select();

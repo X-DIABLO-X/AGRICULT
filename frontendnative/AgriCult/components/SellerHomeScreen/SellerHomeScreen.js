@@ -62,12 +62,23 @@ const App = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
+  
   // Fetch orders from API
   useEffect(() => {
     fetchOrders();
   }, []);
-
+  const getQuality = (qualityValue) => {
+    switch (qualityValue) {
+      case 0:
+        return "Single Filter";
+      case 1:
+        return "Double Filter";
+      case 2:
+        return "Triple Filter";
+      default:
+        return "Unknown Quality";
+    }
+  };
   const fetchOrders = async () => {
     try {
       const response = await fetch(
@@ -80,7 +91,7 @@ const App = ({ navigation }) => {
           product: `Order #${order.id}`,
           region: order.region,
           quantity: order.quantity,
-          quality: order.quality,
+          quality: getQuality(order.quality),
           deliveryLocation: order.deliveryLocation,
           loadingDate: order.loadingDate,
           userName: order.userName,
@@ -362,6 +373,7 @@ const App = ({ navigation }) => {
                 ;
               </>
             )}
+            showsVerticalScrollIndicator={false}
           />
         )}
       </View>
@@ -576,7 +588,7 @@ const styles = StyleSheet.create({
     top: 20,
   },
   closeButtonText: {
-    fontSize: 24,
+    fontSize: 14,
     color: '#97AFA7',
   },
   successImage: {
@@ -585,14 +597,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 16,
     color: '#30534D',
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#97AFA7',
     textAlign: 'center',
     lineHeight: 24,
@@ -607,7 +619,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -637,7 +649,7 @@ const styles = StyleSheet.create({
   },
   buyerText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500'
   },
   expiringRow: {
@@ -652,12 +664,12 @@ const styles = StyleSheet.create({
   },
   timerValue: {
     color: '#ffd700',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold'
   },
   quantityHeader: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 14,
     fontWeight: 'bold',
     marginVertical: 12
   },
@@ -669,7 +681,7 @@ const styles = StyleSheet.create({
   },
   locationHeader: {
     color: '#fff',
-    fontSize: 18
+    fontSize: 15
   },
   qualityBadge: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -691,7 +703,7 @@ const styles = StyleSheet.create({
     padding: 20
   },
   bidFormTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#30534d',
     marginBottom: 15
@@ -701,7 +713,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
-    fontSize: 16,
+    fontSize: 14,
     backgroundColor: '#f8f8f8',
     marginBottom: 15
   },
@@ -720,7 +732,7 @@ const styles = StyleSheet.create({
   imageUploadButtonText: {
     color: '#fff',
     marginLeft: 8,
-    fontSize: 16
+    fontSize: 14
   },
   imageLimitText: {
     color: '#666',
@@ -758,7 +770,7 @@ const styles = StyleSheet.create({
   },
   submitBidText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold'
   },
   cancelButton: {
@@ -769,7 +781,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: '#666',
-    fontSize: 16
+    fontSize: 14
   },
   errorText: {
     color: '#ff4444',
@@ -808,13 +820,13 @@ const styles = StyleSheet.create({
   },
   
   timerTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#e2872b'
   },
   
   timerText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#e2872b'
   },
@@ -836,7 +848,7 @@ const styles = StyleSheet.create({
     marginBottom: 80,
   },
   userNameText: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
     color: "black",
   },
@@ -876,7 +888,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   quantityText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "500",
     color: "#1E7C57",
   },
@@ -884,7 +896,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   locationText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#1E7C57",
   },
   regionBox: {
@@ -906,12 +918,12 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   timerTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#e2872b",
   },
   timerText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#e2872b",
   },
@@ -924,7 +936,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
   },
   header: {
@@ -952,21 +964,25 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 8,
+    marginTop: 10,
   },
   name: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: "bold",
     marginRight: 10,
+    marginTop: 10,
   },
   usercog: {
-    fontSize: 24,
+    fontSize: 26,
     marginHorizontal: 5,
+    marginTop: 10,
   },
 
   container: {
     flex: 1,
     padding: 20,
     backgroundColor: "#efefec",
+    marginBottom: 80,
   },
   header: {
     flexDirection: "row",
@@ -974,7 +990,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#1E7C57",
   },
@@ -1002,7 +1018,7 @@ const styles = StyleSheet.create({
   },
 
   productText: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: "serif",
     fontWeight: "bold",
     color: "black",
@@ -1013,20 +1029,22 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   quantityText: {
-    fontSize: 24,
+    paddingTop: 5,
+    fontSize: 16,
     fontWeight: "300",
     color: "black",
   },
   locationText: {
-    fontSize: 20,
+    fontSize: 16,
     color: "#1E7C57",
   },
   loacationIcon: {
     color: "#1E7C57",
   },
   dateText: {
+    paddingTop: 10,
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize: 16,
     color: "#30534d",
   },
   row: {
@@ -1076,13 +1094,13 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 14,
     fontWeight: "bold",
     marginBottom: 10,
     color: "#1E7C57",
   },
   modalText: {
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 10,
     color: "#333",
   },
@@ -1143,7 +1161,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   profileUserName: {
-    fontSize: 20,
+    fontSize: 14,
     fontWeight: "bold",
     marginTop: 10,
     color: "#1E7C57",
@@ -1162,7 +1180,7 @@ const styles = StyleSheet.create({
   profileActionText: {
     marginLeft: 10,
     color: "#fff",
-    fontSize: 16,
+    fontSize: 14,
   },
   closeProfileModalButton: {
     marginTop: 20,
@@ -1181,7 +1199,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   detailText: {
-    fontSize: 16,
+    fontSize: 14,
     marginLeft: 10,
     color: "#333",
   },
@@ -1190,7 +1208,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 20,
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "bold",
     marginVertical: 10,
     color: "#1E7C57",
@@ -1237,7 +1255,7 @@ const styles = StyleSheet.create({
   imageUploadButtonText: {
     marginLeft: 10,
     color: "#fff",
-    fontSize: 16,
+    fontSize: 14,
   },
   imageLimitText: {
     fontSize: 14,

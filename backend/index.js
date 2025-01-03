@@ -523,3 +523,126 @@ const PORT = process.env.PORT || 3030;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+app.get("/all/chats", async (req, res) => {
+  const { username } = req.query; // Retrieve 'username' from query parameters
+
+  if (!username) {
+    return res.status(400).json({
+      success: false,
+      message: "Username is required in the query parameters",
+    });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("CHATS")
+      .select("*")
+      .or(`senderUserName.eq.${username},receiverUserName.eq.${username}`)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch chats",
+        error: error.message,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      chats: data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching chats",
+      error: error.message,
+    });
+  }
+});
+
+
+// Fetch Specific User Chats Endpoint
+app.get("/chats", async (req, res) => {
+  try {
+    const { senderUserName, receiverUserName } = req.query;
+
+    if (!senderUserName || !receiverUserName) {
+      return res.status(400).json({
+        success: false,
+        message: "Both sender and receiver usernames are required"
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("CHATS")
+      .select("*")
+      .or(`and(senderUserName.eq.${senderUserName},receiverUserName.eq.${receiverUserName}),and(senderUserName.eq.${receiverUserName},receiverUserName.eq.${senderUserName})`)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch chats",
+        error: error.message
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      chats: data
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching chats",
+      error: error.message
+    });
+  }
+});
+
+// Create New Chat Endpoint
+app.post("/new/chat", async (req, res) => {
+  try {
+    const { senderUserName, receiverUserName, message, audioChat, type } = req.body;
+
+    if (!senderUserName || !receiverUserName || !message || !type) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields missing"
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("CHATS")
+      .insert([{
+        senderUserName,
+        receiverUserName,
+        message,
+        audioChat,
+        type
+      }])
+      .select();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to create chat",
+        error: error.message
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Chat created successfully",
+      chat: data[0]
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error while creating chat",
+      error: error.message
+    });
+  }
+});

@@ -87,9 +87,16 @@ export default function App() {
           component={NewLogin} 
           options={{ headerShown: false }} // Hides the default header
         />
-        <Stack.Screen name="ChatList" component={ChatList} />
         <Stack.Screen name="PastBidsScreen" component={PastBidsScreen} />
-      
+        <Stack.Screen 
+          name="ChatList" 
+          component={ChatList}
+        />
+        
+        <Stack.Screen 
+          name="ChatInterface" 
+          component={Chat}
+        />
         
         <Stack.Screen
           name="UserTypeSelection"

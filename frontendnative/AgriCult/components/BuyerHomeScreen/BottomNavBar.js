@@ -7,7 +7,7 @@ import ActiveOrder from "./ActiveOrder"
 import ChatList from "../ChatScreen/ChatList"
 import ProfilePage from "./ProfilePage"
 import PastOrder from "./PastOrder"
-import BidsList from './bidList';
+import ChatInterface from '../ChatScreen/Chat';
 
 const BottomNavBar = () => {
   const [activePage, setActivePage] = useState('ActiveOrder');
@@ -19,8 +19,8 @@ const BottomNavBar = () => {
         return <ActiveOrder />;
       case 'PastOrder':
         return <PastOrder />;
-      case 'Bids':
-        return <BidsList />;
+      case 'Chat':
+        return <ChatList />;
       case 'Profile':
         return <ProfilePage />;
       default:
@@ -33,11 +33,11 @@ const BottomNavBar = () => {
       <View style={styles.content}>{renderPage()}</View>
       <View style={styles.navBarContainer}>
         <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('ActiveOrder')}>
-          <Ionicons name="list-outline" size={24} color={activePage === 'ActiveOrder' ? 'blue' : 'black'} />
+          <Ionicons name="list" size={24} color={activePage === 'ActiveOrder' ? 'blue' : 'black'} />
           <Text style={[styles.navButtonText, activePage === 'ActiveOrder' && styles.activeText]}>Active Order</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('PastOrder')}>
-          <Ionicons name="time-outline" size={24} color={activePage === 'PastOrder' ? 'blue' : 'black'} />
+          <Ionicons name="time" size={24} color={activePage === 'PastOrder' ? 'blue' : 'black'} />
           <Text style={[styles.navButtonText, activePage === 'PastOrder' && styles.activeText]}>Past Order</Text>
         </TouchableOpacity>
         
@@ -47,12 +47,12 @@ const BottomNavBar = () => {
           </TouchableOpacity>
         </View>
         
-        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Bids')}>
-          <Ionicons name="cash-outline" size={24} color={activePage === 'Bids' ? 'blue' : 'black'} />
-          <Text style={[styles.navButtonText, activePage === 'Bids' && styles.activeText]}>Bids</Text>
+        <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Chat')}>
+          <Ionicons name="chatbubble-ellipses" size={24} color={activePage === 'Chat' ? 'blue' : 'black'} />
+          <Text style={[styles.navButtonText, activePage === 'Chat' && styles.activeText]}>Chat</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navButton} onPress={() => setActivePage('Profile')}>
-          <Ionicons name="person-outline" size={24} color={activePage === 'Profile' ? 'blue' : 'black'} />
+          <Ionicons name="person" size={24} color={activePage === 'Profile' ? 'blue' : 'black'} />
           <Text style={[styles.navButtonText, activePage === 'Profile' && styles.activeText]}>Profile</Text>
         </TouchableOpacity>
       </View>

@@ -1,74 +1,179 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import { createClient } from '@supabase/supabase-js';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
-import { Ionicons } from '@expo/vector-icons';
+const POLLING_INTERVAL = 3000;
+const API_BASE_URL = 'https://agricult.onrender.com';
 
-// Replace these with your Supabase project URL and Anon Key
-const SUPABASE_URL = 'https://pojuqqnftsunpiutlyrn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvanVxcW5mdHN1bnBpdXRseXJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2ODAwOTIsImV4cCI6MjA1MDI1NjA5Mn0.0QASIiNcOib_pClL7XMi45_MoK3cMNjLbmvfhp982UQ';
+const ChatInterface = ({ navigation, route }) => {
+  const [message, setMessage] = useState('');
+  const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const scrollViewRef = useRef();
+  
+  const currentUser = route.params?.currentUser || 'EL-DIABLO69';
+  const receiverUser = route.params?.receiverUser || 'AMBANI';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const dealInfo = {
+    quantity: '25 Tons',
+    type: 'Double Filter',
+    location: 'Delhi,Azadpur Mandi',
+    quality: 'Chamnarajnagar Quality',
+    loadingDate: '08 Jan'
+  };
 
-const Chat = ({ chatId }) => {
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const formatMessageDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return `Today ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return `Yesterday ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+    } else {
+      return `${date.toLocaleDateString('en-US', { weekday: 'short' })} ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+  };
+
+  const fetchChats = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/chats?senderUserName=${currentUser}&receiverUserName=${receiverUser}`
+      );
+      const data = await response.json();
+      
+      if (data.success) {
+        setChats(data.chats);
+        setError(null);
+      } else {
+        setError('Failed to fetch chats');
+      }
+    } catch (err) {
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const channel = supabase
-      .channel('custom-messages-channel')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` },
-        (payload) => {
-          setMessages((prevMessages) => [...prevMessages, payload.new]);
-        }
-      )
-      .subscribe();
+    fetchChats();
+    const interval = setInterval(fetchChats, POLLING_INTERVAL);
+    return () => clearInterval(interval);
+  }, [currentUser, receiverUser]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [chatId]);
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  }, [chats]);
 
-  const sendMessage = async () => {
-    if (newMessage.trim() === '') return;
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
 
-    const { error } = await supabase
-      .from('messages')
-      .insert([{ chat_id: chatId, content: newMessage, sender_id: 'buyer_id' }]);
+    try {
+      const response = await fetch(`${API_BASE_URL}/new/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          senderUserName: currentUser,
+          receiverUserName: receiverUser,
+          message: message.trim(),
+          type: 0
+        }),
+      });
 
-    if (!error) setNewMessage('');
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage('');
+        fetchChats();
+      } else {
+        setError('Failed to send message');
+      }
+    } catch (err) {
+      setError('Network error while sending message');
+    }
   };
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View
-            style={
-              item.sender_id === 'buyer_id'
-                ? [styles.messageBubble, styles.buyerBubble]
-                : [styles.messageBubble, styles.sellerBubble]
-            }
-          >
-            <Text style={styles.messageText}>{item.content}</Text>
-          </View>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialIcons name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
+        <Image source={require('../../assets/profile.png')} style={styles.avatar} />
+        <Text style={styles.headerTitle}>{receiverUser}</Text>
+        <TouchableOpacity style={styles.menuButton}>
+          <MaterialIcons name="more-vert" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.dealCard}>
+        <Text style={styles.dealTitle}>{dealInfo.quantity} | {dealInfo.type}</Text>
+        <View style={styles.locationContainer}>
+          <MaterialIcons name="location-on" size={16} color="white" />
+          <Text style={styles.locationText}>{dealInfo.location}</Text>
+        </View>
+        <View style={styles.qualityBadge}>
+          <Text style={styles.qualityText}>{dealInfo.quality}</Text>
+        </View>
+        <Text style={styles.loadingDate}>Loading Date: {dealInfo.loadingDate}</Text>
+      </View>
+
+      <ScrollView 
+        ref={scrollViewRef}
+        style={styles.messagesContainer}
+      >
+        {loading ? (
+          <Text style={styles.statusText}>Loading messages...</Text>
+        ) : error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : (
+          chats.map(chat => (
+            <View key={chat.chatID} style={[
+              styles.messageWrapper,
+              chat.senderUserName === currentUser ? styles.currentUserMessage : styles.otherUserMessage
+            ]}>
+              {chat.senderUserName !== currentUser && (
+                <Image source={require('../../assets/profile.png')} style={styles.messageAvatar} />
+              )}
+              <View style={[
+                styles.messageBubble,
+                chat.senderUserName === currentUser ? styles.currentUserBubble : styles.otherUserBubble
+              ]}>
+                <Text style={[
+                  styles.messageText,
+                  chat.senderUserName === currentUser && styles.currentUserMessageText
+                ]}>{chat.message}</Text>
+                <Text style={styles.messageTime}>
+                  {formatMessageDate(chat.created_at)}
+                </Text>
+              </View>
+            </View>
+          ))
         )}
-        contentContainerStyle={styles.messagesContainer}
-      />
+      </ScrollView>
+
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          value={newMessage}
-          onChangeText={setNewMessage}
-          placeholder="Type a message"
-          placeholderTextColor="#aaa"
+          placeholder="Type your message"
+          value={message}
+          onChangeText={setMessage}
+          multiline
         />
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Ionicons name="send" size={24} color="white" />
+        <TouchableOpacity 
+          style={styles.sendButton}
+          onPress={handleSendMessage}>
+          <MaterialIcons name="send" size={24} color="white" />
         </TouchableOpacity>
       </View>
     </View>
@@ -78,60 +183,146 @@ const Chat = ({ chatId }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#F5F5F5',
   },
-  messagesContainer: {
-    padding: 10,
-  },
-  messageBubble: {
-    maxWidth: '75%',
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: 'white',
     elevation: 2,
   },
-  buyerBubble: {
-    backgroundColor: '#d1e7ff',
-    alignSelf: 'flex-end',
-    borderTopRightRadius: 0,
+  backButton: {
+    marginRight: 16,
   },
-  sellerBubble: {
-    backgroundColor: '#e9f5dc',
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  menuButton: {
+    padding: 8,
+  },
+  dealCard: {
+    backgroundColor: '#2B5741',
+    padding: 16,
+    margin: 16,
+    borderRadius: 8,
+  },
+  dealTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  locationText: {
+    color: 'white',
+    marginLeft: 4,
+  },
+  qualityBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
     alignSelf: 'flex-start',
-    borderTopLeftRadius: 0,
+    marginBottom: 8,
+  },
+  qualityText: {
+    color: 'white',
+    fontSize: 12,
+  },
+  loadingDate: {
+    color: 'white',
+    fontSize: 12,
+  },
+  messagesContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  messageWrapper: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  messageAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  messageBubble: {
+    maxWidth: '70%',
+    padding: 12,
+    borderRadius: 16,
+    elevation: 1,
   },
   messageText: {
     fontSize: 16,
-    color: '#333',
+    color: 'black',
+  },
+  messageTime: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
   },
   inputContainer: {
     flexDirection: 'row',
+    padding: 16,
+    backgroundColor: 'white',
     alignItems: 'center',
-    padding: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-    backgroundColor: '#fff',
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 25,
-    padding: 10,
-    marginRight: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#F0F0F0',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    maxHeight: 100,
   },
   sendButton: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 25,
+    backgroundColor: '#2B5741',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  currentUserMessage: {
+    justifyContent: 'flex-end',
+  },
+  otherUserMessage: {
+    justifyContent: 'flex-start',
+  },
+  currentUserBubble: {
+    backgroundColor: '#2B5741',
+  },
+  otherUserBubble: {
+    backgroundColor: 'white',
+  },
+  currentUserMessageText: {
+    color: 'white',
+  },
+  statusText: {
+    textAlign: 'center',
+    padding: 16,
+    color: '#666',
+  },
+  errorText: {
+    textAlign: 'center',
+    padding: 16,
+    color: 'red',
+  },
 });
 
-export default Chat;
+export default ChatInterface;

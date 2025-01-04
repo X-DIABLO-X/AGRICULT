@@ -620,7 +620,8 @@ app.post("/new/chat", async (req, res) => {
         senderUserName,
         receiverUserName,
         message,
-        type
+        type,
+        audioChat
       }])
       .select();
 

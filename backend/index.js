@@ -606,7 +606,7 @@ app.get("/chats", async (req, res) => {
 app.post("/new/chat", async (req, res) => {
   try {
     const { senderUserName, receiverUserName, message, audioChat, type } = req.body;
-
+    console.log(req.body);
     if (!senderUserName || !receiverUserName || !message || type === undefined) {
       return res.status(400).json({
         success: false,
@@ -621,7 +621,7 @@ app.post("/new/chat", async (req, res) => {
         receiverUserName,
         message,
         type,
-        audioChat
+        audioChat,
       }])
       .select();
 

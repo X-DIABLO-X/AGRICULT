@@ -222,6 +222,22 @@ const CollectionCenter = ({ route, navigation }) => {
     );
   }
 
+  if (!collections.length) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+        <CollectionHeader />
+        <View style={styles.emptyStateContainer}>
+          <Ionicons name="document-text-outline" size={64} color="#97AFA7" />
+          <Text style={styles.emptyStateTitle}>No Quotes Yet</Text>
+          <Text style={styles.emptyStateText}>
+            You haven't received any quotes for this order yet.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -428,6 +444,26 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: 'white',
     fontWeight: '500',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#2D4F4D',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#97AFA7',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 

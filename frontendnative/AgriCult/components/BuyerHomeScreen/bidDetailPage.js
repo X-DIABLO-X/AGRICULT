@@ -38,6 +38,7 @@ const CollectionCenter = ({ route, navigation }) => {
   }, [order.orderID]);
 
   const fetchBids = async () => {
+    console.log(order);
     try {
       setLoading(true);
       const response = await fetch(`https://agricult.onrender.com/fetch/bids?orderID=${order.orderID}`);
@@ -98,15 +99,26 @@ const CollectionCenter = ({ route, navigation }) => {
       <Text style={styles.headerTitle}>Collection Center</Text>
     </View>
   );
-
+  const qualityCheck = (quality) => {
+    switch (quality) {
+      case 0:
+        return 'Single Filter';
+      case 1:
+        return 'Double Filter';
+      case 2:
+        return 'Mixed Filter';
+      default:
+        return quality;
+    }
+  }
   const CollectionHeader = () => (
     <View style={styles.collectionHeaderContainer}>
       <View>
         <Text style={styles.tonsText}>
-          {order.tons || 25} Tons | {order.filterType || 'Double Filter'}
+          {order.quantity || 25} Tons | {qualityCheck(order.quality)}
         </Text>
         <View style={styles.qualityPill}>
-          <Text style={styles.qualityText}>{order.quality || 'Chamnarajnagar Quality'}</Text>
+          <Text style={styles.qualityText}>{(order.region+' Quality') || 'Chamnarajnagar Quality'}</Text>
         </View>
         <Text style={styles.loadingDateText}>
           Loading Date: {order.loadingDate || '08 Jan'}

@@ -52,7 +52,7 @@ const CollectionCenter = ({ route, navigation }) => {
             year: 'numeric'
           }),
           price: bid.amount,
-          images: bid.pic.image,
+          images: bid.pic.images,
           userName: bid.userName,
           license: bid.license
         }));
@@ -167,12 +167,12 @@ const CollectionCenter = ({ route, navigation }) => {
   const renderCollectionItem = ({ item }) => (
     <View style={styles.collectionCard}>
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{order.userName}</Text>
+        <Text style={styles.cardTitle}>{item.userName}</Text>
         <Text style={styles.priceText}>Rs {item.price}</Text>
       </View>
       <Text style={styles.loadingDateLabel}>Bid Date</Text>
       <Text style={styles.dateChip}>{item.loadingDate}</Text>
-      
+      {console.log(item.images)}
       <View style={styles.imagesContainer}>
         <FlatList
           horizontal
@@ -194,7 +194,7 @@ const CollectionCenter = ({ route, navigation }) => {
           <Text style={styles.actionButtonText}>Accept</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText} onPress={() => console.log('Counter')}>Counter</Text>
+          <Text style={styles.actionButtonText} onPress={() => navigation.navigate('ChatInterface')}>Counter</Text>
         </TouchableOpacity>
       </View>
     </View>

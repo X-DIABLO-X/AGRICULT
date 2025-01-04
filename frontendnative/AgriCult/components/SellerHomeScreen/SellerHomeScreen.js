@@ -12,6 +12,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import { ScrollView } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadImages } from '../../imageUploader';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { launchImageLibrary } from "react-native-image-picker";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -65,6 +68,9 @@ const App = ({ navigation }) => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -95,9 +101,50 @@ const App = ({ navigation }) => {
 
     getUserData();
   }, []);
-  console.log(userData);
-  console.log(userRegion);
+  // console.log(userData);
+ // console.log(userRegion);
   // Fetch orders from API
+  
+  const handleSelectImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (!permissionResult.granted) {
+      Alert.alert('Permission needed', 'Please allow access to your photos');
+      return;
+    }
+  
+    // Limit check
+    if (images.length >= 5) {
+      setErrorMessage('You can only upload up to 5 images');
+      return;
+    }
+  
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaType,
+        allowsEditing: false,
+        quality: 1,
+        base64: true, // Make sure this is true
+      });
+  
+      if (!result.canceled && result.assets[0]) {
+        const selectedImage = result.assets[0];
+        
+        // Verify base64 data exists
+        if (!selectedImage.base64) {
+          throw new Error('No base64 data received from selected image');
+        }
+  
+        setSelectedImage(selectedImage.uri);
+        setImages(prevImages => [...prevImages, selectedImage]);
+      }
+    } catch (error) {
+      console.error('Error selecting image:', error);
+      Alert.alert('Error', 'Failed to select image. Please try again.');
+    }
+  };
+  
+  
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -111,6 +158,37 @@ const App = ({ navigation }) => {
         return "Triple Filter";
       default:
         return "Unknown Quality";
+    }
+  };
+  const uploadBids = async (imageUrls) => {
+    try {
+      const response = await fetch('https://agricult.onrender.com/new/bid', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderID: selectedOrder.id,
+          userName: userData.userName,
+          amount: currentBid,
+          pic: {"images":imageUrls},
+          license: userData.license
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to upload bids.');
+      }
+  
+      const data = await response.json();
+      if (data.success) {
+        setShowSuccessModal(true);
+      } else {
+        throw new Error(data.message || 'Failed to upload bids.');
+      }
+    } catch (error) {
+      console.error('Error uploading bids:', error);
+      Alert.alert('Error', 'Failed to upload bids. Please try again.');
     }
   };
   const fetchOrders = async () => {
@@ -155,23 +233,40 @@ const App = ({ navigation }) => {
     console.log("User  logged out");
   };
 
-  const handleMakeBid = () => {
+  const handleMakeBid = async () => {
     if (!currentBid || isNaN(currentBid) || parseFloat(currentBid) <= 0) {
       alert("Please enter a valid bid amount.");
       return;
     }
 
     setIsLoading(true);
-    const confirmationDate = new Date().toLocaleString();
+    try {
+      // Extract base64 data from images
+      const base64DataArray = images.map(img => img.base64);
+      if (!base64DataArray.length) {
+        throw new Error('No images selected or base64 data missing');
+      }
+  
+      // Upload images with base64 data
+      const uploadedImageUrls = await uploadImages(base64DataArray);
 
-    setTimeout(() => {
+      console.log('Uploaded image URLs from page2:', uploadedImageUrls);
+      uploadBids(uploadedImageUrls);
+      
+      const confirmationDate = new Date().toLocaleString();
+  
+      // Update orders with the uploaded image URLs
       const updatedOrders = orders.map((order) => {
         if (order.id === selectedOrder.id) {
           return {
             ...order,
             bids: [
               ...order.bids,
-              { bid: currentBid, date: confirmationDate, images },
+              { 
+                bid: currentBid, 
+                date: confirmationDate, 
+                images: uploadedImageUrls 
+              },
             ],
           };
         }
@@ -182,9 +277,13 @@ const App = ({ navigation }) => {
       setBidModalVisible(false);
       setCurrentBid("");
       setImages([]);
-      setIsLoading(false);
       setShowSuccessModal(true);
-    }, 1000);
+    } catch (error) {
+      console.error('Error submitting bid:', error);
+      alert('Failed to upload images. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const openOrderDetails = (orderId) => {
@@ -553,42 +652,51 @@ const App = ({ navigation }) => {
           
 
           <View style={styles.imageUploadSection}>
-            <TouchableOpacity
-              onPress={openImagePicker}
-              style={styles.imageUploadButton}
-            >
-              <Ionicons name="image-outline" size={20} color="#fff" />
-              <Text style={styles.imageUploadButtonText}>Upload Images</Text>
-            </TouchableOpacity>
-            
-          </View>
+  <TouchableOpacity
+    onPress={handleSelectImage}
+    style={styles.imageUploadButton}
+  >
+    <Ionicons name="image-outline" size={20} color="#fff" />
+    <Text style={styles.imageUploadButtonText}>Upload Images</Text>
+  </TouchableOpacity>
+</View>
 
-          {images.length > 0 && (
-            <ScrollView 
-              horizontal 
-              style={styles.imagePreviewScroll}
-              showsHorizontalScrollIndicator={false}
+    {/* Display uploaded images */}
+    {images.length > 0 && (
+      <View style={styles.imagePreviewContainer}>
+        <ScrollView
+        horizontal
+        style={styles.imagePreviewScroll}
+        showsHorizontalScrollIndicator={false}
+      >
+        {images.map((img, index) => (
+          <View key={index} style={styles.imagePreviewCard}>
+            {/* Image Preview */}
+            <Image
+              source={{ uri: img.uri }}
+              style={styles.previewImage}
+            />
+
+            {/* Remove Image Button */}
+            <TouchableOpacity
+              style={styles.removeImageButton}
+              onPress={() => {
+                const newImages = [...images];
+                newImages.splice(index, 1);
+                setImages(newImages);
+              }}
             >
-              {images.map((img, index) => (
-                <View key={index} style={styles.imagePreviewCard}>
-                  <Image
-                    source={{ uri: img.uri }}
-                    style={styles.previewImage}
-                  />
-                  <TouchableOpacity 
-                    style={styles.removeImageButton}
-                    onPress={() => {
-                      const newImages = [...images];
-                      newImages.splice(index, 1);
-                      setImages(newImages);
-                    }}
-                  >
-                    <Ionicons name="close-circle" size={24} color="#ff4444" />
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </ScrollView>
-          )}
+              <Ionicons name="close-circle" size={24} color="#ff4444" />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+      </View>
+    )}
+    {errorMessage !== '' && (
+        <Text style={styles.errorMessage}>{errorMessage}</Text>
+      )}
+
 
           <View style={styles.buttonContainer}>
             {isLoading ? (
@@ -641,8 +749,6 @@ const styles = StyleSheet.create({
     color: '#97AFA7',
   },
   successImage: {
-    width: 200,
-    height: 200,
     marginBottom: 20,
   },
   title: {
@@ -788,26 +894,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center'
   },
-  imagePreviewScroll: {
-    maxHeight: 100,
-    marginBottom: 15
-  },
-  imagePreviewCard: {
-    marginRight: 10,
-    position: 'relative'
-  },
-  previewImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8
-  },
-  removeImageButton: {
-    position: 'absolute',
-    top: -10,
-    right: -10,
-    backgroundColor: '#fff',
-    borderRadius: 12
-  },
+
+
+
   buttonContainer: {
     gap: 10
   },
@@ -882,8 +971,8 @@ const styles = StyleSheet.create({
   submitQuote: {
     backgroundColor: "#30534d",
     padding: 10,
-    width: "95%",
-
+    width: "100%",
+    textAlign: "center",
     borderRadius: 5,
   },
   submitbidd: {
@@ -1031,8 +1120,8 @@ const styles = StyleSheet.create({
   },
 
   container: {
+    padding: 15,
     flex: 1,
-    padding: 20,
     backgroundColor: "#efefec",
     marginBottom: 80,
   },
@@ -1315,8 +1404,16 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   imagePreviewContainer: {
-    flexDirection: "row",
-    marginTop: 10,
+    display: "flex",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 10,
+    gap: 10,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    width: '100%',
+    borderRadius: 5,
+    backgroundColor: "#f5f5f5",
   },
   imagePreview: {
     backgroundColor: "#f5f5f5",
@@ -1345,8 +1442,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   cancelButtonText: {
-    color: "#fff",
+    color: "black",
     textAlign: "center",
+    fontWeight: "bold",
   },
   errorText: {
     color: "red",
@@ -1384,6 +1482,60 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  imagePreviewScroll: {
+    marginVertical: 10,
+    maxHeight: 120, // Limit height to prevent overflow
+    width: '100%'
+  },
+
+  imagePreviewCard: {
+    position: 'relative',
+    marginRight: 10,
+    borderRadius: 8,
+    overflow: 'hidden',
+    width: 100,
+    height: 100,
+    backgroundColor: '#f0f0f0'
+  },
+
+  previewImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover'
+  },
+
+  removeImageButton: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 2,
+    zIndex: 1
+  },
+
+  buttonContainer: {
+    width: '100%',
+    marginTop: 20,
+    gap: 10
+  },
+
+
+
+  cancelButton: {
+    backgroundColor: '#f0f0f0',
+    padding: 15,
+    borderRadius: 8,
+    width: '100%'
+  },
+  submitButtonContainer: {
+    display: 'flex',
+  },
+  errorMessage: {
+    color: 'red',
+    fontSize: 14,
+    marginTop: 10,
   },
 });
 

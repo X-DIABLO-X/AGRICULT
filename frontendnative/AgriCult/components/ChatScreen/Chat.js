@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import AudioChat from './audioChat';
+import AudioMessage from './audioMessage';
 
 const POLLING_INTERVAL = 3000;
 const API_BASE_URL = 'https://agricult.onrender.com';
@@ -11,12 +13,13 @@ const ChatInterface = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const scrollViewRef = useRef();
+  const [isNearBottom, setIsNearBottom] = useState(true);
   
   const currentUser = route.params?.currentUser || 'EL-DIABLO69';
   const receiverUser = route.params?.receiverUser || 'AMBANI';
 
   const dealInfo = {
-    quantity: '25 Tons',
+    quantity: +' Tons',
     type: 'Double Filter',
     location: 'Delhi,Azadpur Mandi',
     quality: 'Chamnarajnagar Quality',
@@ -64,12 +67,18 @@ const ChatInterface = ({ navigation, route }) => {
     return () => clearInterval(interval);
   }, [currentUser, receiverUser]);
 
+
   useEffect(() => {
-    if (scrollViewRef.current) {
+    if (isNearBottom && scrollViewRef.current) {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
   }, [chats]);
 
+  const handleScroll = (event) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const isNearBottom = contentOffset.y + layoutMeasurement.height >= contentSize.height - 50;
+    setIsNearBottom(isNearBottom);
+  };
   const handleSendMessage = async () => {
     if (!message.trim()) return;
 
@@ -116,7 +125,7 @@ const ChatInterface = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.dealCard}>
+      {/* <View style={styles.dealCard}>
         <Text style={styles.dealTitle}>{dealInfo.quantity} | {dealInfo.type}</Text>
         <View style={styles.locationContainer}>
           <MaterialIcons name="location-on" size={16} color="white" />
@@ -126,11 +135,13 @@ const ChatInterface = ({ navigation, route }) => {
           <Text style={styles.qualityText}>{dealInfo.quality}</Text>
         </View>
         <Text style={styles.loadingDate}>Loading Date: {dealInfo.loadingDate}</Text>
-      </View>
+      </View> */}
 
       <ScrollView 
         ref={scrollViewRef}
         style={styles.messagesContainer}
+        scrollEventThrottle={16}
+        onScroll={handleScroll}
       >
         {loading ? (
           <Text style={styles.statusText}>Loading messages...</Text>
@@ -145,18 +156,25 @@ const ChatInterface = ({ navigation, route }) => {
               {chat.senderUserName !== currentUser && (
                 <Image source={require('../../assets/profile.png')} style={styles.messageAvatar} />
               )}
-              <View style={[
-                styles.messageBubble,
-                chat.senderUserName === currentUser ? styles.currentUserBubble : styles.otherUserBubble
-              ]}>
-                <Text style={[
-                  styles.messageText,
-                  chat.senderUserName === currentUser && styles.currentUserMessageText
-                ]}>{chat.message}</Text>
-                <Text style={styles.messageTime}>
-                  {formatMessageDate(chat.created_at)}
-                </Text>
-              </View>
+              {chat.type === 0 ? (
+                <View style={[
+                  styles.messageBubble,
+                  chat.senderUserName === currentUser ? styles.currentUserBubble : styles.otherUserBubble
+                ]}>
+                  <Text style={[
+                    styles.messageText,
+                    chat.senderUserName === currentUser && styles.currentUserMessageText
+                  ]}>{chat.message}</Text>
+                  <Text style={styles.messageTime}>
+                    {formatMessageDate(chat.created_at)}
+                  </Text>
+                </View>
+              ) : (
+                <AudioMessage 
+                  url={chat.audioChat.audio} 
+                  isCurrentUser={chat.senderUserName === currentUser} 
+                />
+              )}
             </View>
           ))
         )}
@@ -169,6 +187,11 @@ const ChatInterface = ({ navigation, route }) => {
           value={message}
           onChangeText={setMessage}
           multiline
+        />
+        <AudioChat 
+          onAudioSend={fetchChats}
+          currentUser={currentUser}
+          receiverUser={receiverUser}
         />
         <TouchableOpacity 
           style={styles.sendButton}
@@ -272,7 +295,7 @@ const styles = StyleSheet.create({
   },
   messageTime: {
     fontSize: 12,
-    color: '#666',
+    color: '#B0B0B0',
     marginTop: 4,
   },
   inputContainer: {
@@ -280,18 +303,19 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: 'white',
     alignItems: 'center',
+    borderRadius: 15,
   },
   input: {
     flex: 1,
     backgroundColor: '#F0F0F0',
     borderRadius: 24,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 12,
     marginRight: 8,
     maxHeight: 100,
   },
   sendButton: {
-    backgroundColor: '#2B5741',
+    backgroundColor: '#075E54',
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -305,7 +329,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   currentUserBubble: {
-    backgroundColor: '#2B5741',
+    backgroundColor: '#075E54',
   },
   otherUserBubble: {
     backgroundColor: 'white',
@@ -322,6 +346,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 16,
     color: 'red',
+  },
+  audioBubble: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    minWidth: 100,
+    maxWidth: 200,
+  },
+  audioWaveform: {
+    flex: 1,
+    height: 30,
+    marginLeft: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 4,
   },
 });
 
